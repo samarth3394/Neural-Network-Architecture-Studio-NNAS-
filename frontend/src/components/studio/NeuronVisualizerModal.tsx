@@ -20,7 +20,7 @@ export const NeuronVisualizerModal: React.FC = () => {
 
   const layerShapes = validationResult?.layer_shapes || [];
   const COLUMN_HEIGHT = 320;
-  const SVG_WIDTH = 64;
+  const SVG_WIDTH = 76;
 
   const totalParams = useMemo(() => {
     return layerShapes.reduce((acc, l) => acc + (l.param_count || 0), 0);
@@ -225,19 +225,9 @@ export const NeuronVisualizerModal: React.FC = () => {
                               }`}
                             />
 
-                            {/* Floating Telemetry Tooltip */}
-                            <div className="pointer-events-none absolute left-full ml-2 hidden w-36 rounded-md border border-slate-700 bg-slate-950 p-2 text-[10px] text-slate-300 shadow-xl group-hover:block z-30 font-mono">
-                              <div className="font-semibold text-white">
-                                Unit #{neuronIdx + 1}
-                              </div>
-                              <div className="text-slate-400 text-[9px] mt-0.5">
-                                Layer: {layer.layer_type}
-                              </div>
-                              <div className="text-blue-400 text-[9px] mt-1">
-                                {nextDisplayNeurons > 0
-                                  ? `Fan-Out: ${nextRawDim.toLocaleString()} weights`
-                                  : 'Output classification logit'}
-                              </div>
+                            {/* Non-overlapping Micro-tag positioned above unit */}
+                            <div className="pointer-events-none absolute bottom-full mb-1 left-1/2 -translate-x-1/2 hidden whitespace-nowrap rounded bg-slate-900/95 border border-slate-700 px-2 py-0.5 text-[9px] font-mono text-white shadow-xl group-hover:block z-40">
+                              Unit #{neuronIdx + 1}
                             </div>
                           </div>
                         );
@@ -353,9 +343,33 @@ export const NeuronVisualizerModal: React.FC = () => {
                 TELEMETRY:
               </span>
               {hoveredNeuron ? (
-                <span className="text-blue-400">
-                  Unit selected in Stage {hoveredNeuron.layerIdx + 1} ({hoveredNeuron.layerType}) • Index #{hoveredNeuron.neuronIdx + 1}
-                </span>
+                <div className="flex flex-wrap items-center gap-2 text-blue-400">
+                  <span className="font-semibold text-white">Unit #{hoveredNeuron.neuronIdx + 1}</span>
+                  <span className="text-slate-500">•</span>
+                  <span className="text-slate-300">
+                    Stage {hoveredNeuron.layerIdx + 1}: <strong className="text-white font-mono">{hoveredNeuron.layerType}</strong>
+                  </span>
+                  <span className="text-slate-500">•</span>
+                  <span className="text-slate-300">
+                    Tensor: <strong className="text-blue-300 font-mono">({layerShapes[hoveredNeuron.layerIdx]?.output_shape.join(', ')})</strong>
+                  </span>
+                  <span className="text-slate-500">•</span>
+                  <span className="text-slate-300">
+                    {hoveredNeuron.layerIdx < layerShapes.length - 1 ? (
+                      <>
+                        Fan-Out:{' '}
+                        <strong className="text-emerald-400 font-mono">
+                          {layerShapes[hoveredNeuron.layerIdx + 1]?.output_shape
+                            .reduce((a, b) => a * b, 1)
+                            .toLocaleString()}{' '}
+                          weights
+                        </strong>
+                      </>
+                    ) : (
+                      <span className="text-emerald-400 font-semibold font-mono">Final Output Classification Unit</span>
+                    )}
+                  </span>
+                </div>
               ) : isAnimating ? (
                 <span className="text-emerald-400">
                   Propagating feedforward tensor activations across Stage {animationStep + 1} of {layerShapes.length}...
