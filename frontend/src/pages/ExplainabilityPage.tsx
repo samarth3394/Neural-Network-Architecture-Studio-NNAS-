@@ -7,10 +7,14 @@ import {
   HelpCircle,
   Eye,
   Info,
+  Rocket,
+  ArrowRight,
 } from 'lucide-react';
 import { api } from '../api/client';
+import { useAppStore } from '../store/appStore';
 
 export const ExplainabilityPage: React.FC = () => {
+  const setActiveTab = useAppStore((s) => s.setActiveTab);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [prediction, setPrediction] = useState<number | null>(null);
@@ -264,6 +268,21 @@ export const ExplainabilityPage: React.FC = () => {
             <div>
               <strong>Scientific Notice:</strong> Observed gradient sensitivity reflects local mathematical gradients at the decision boundary; it does not claim causal importance.
             </div>
+          </div>
+
+          {/* Flow Action: Proceed to Deployment */}
+          <div className="flex items-center justify-between border-t border-white/[0.08] pt-3">
+            <div className="text-xs text-slate-400">
+              Model verified with explainability?
+            </div>
+            <button
+              onClick={() => setActiveTab('deployment')}
+              className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-500 to-cyan-500 px-3.5 py-1.5 text-xs font-semibold text-white shadow-md shadow-indigo-500/25 hover:opacity-95 transition-all"
+            >
+              <Rocket className="h-3.5 w-3.5" />
+              <span>Proceed to Deployment &amp; Serving</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </button>
           </div>
         </div>
       </div>

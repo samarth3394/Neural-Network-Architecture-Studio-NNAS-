@@ -9,8 +9,11 @@ import {
   Layers,
   Trash2,
   LayoutTemplate,
+  PlayCircle,
+  ArrowRight,
 } from 'lucide-react';
 import { useStudioStore } from '../../store/studioStore';
+import { useAppStore } from '../../store/appStore';
 
 export const ValidationBar: React.FC = () => {
   const validationResult = useStudioStore((s) => s.validationResult);
@@ -18,6 +21,7 @@ export const ValidationBar: React.FC = () => {
   const setNeuronModalOpen = useStudioStore((s) => s.setNeuronModalOpen);
   const autoLayout = useStudioStore((s) => s.autoLayout);
   const resetGraph = useStudioStore((s) => s.resetGraph);
+  const setActiveTab = useAppStore((s) => s.setActiveTab);
 
   const isValid = validationResult?.is_valid ?? true;
   const totalParams = validationResult?.total_parameters ?? 0;
@@ -108,6 +112,14 @@ export const ValidationBar: React.FC = () => {
           >
             <Code2 className="h-3.5 w-3.5" />
             PyTorch Code
+          </button>
+          <button
+            onClick={() => setActiveTab('training')}
+            className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-500 to-cyan-500 px-3.5 py-1.5 text-xs font-semibold text-white shadow-md shadow-indigo-500/25 hover:opacity-95 transition-all"
+            title="Proceed to Training"
+          >
+            <PlayCircle className="h-3.5 w-3.5" />
+            <span>Train Model &rarr;</span>
           </button>
         </div>
       </div>

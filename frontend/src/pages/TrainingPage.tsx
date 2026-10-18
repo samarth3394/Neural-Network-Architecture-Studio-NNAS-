@@ -9,6 +9,10 @@ import {
   CheckCircle2,
   Clock,
   Layers,
+  Sparkles,
+  ArrowRight,
+  Eye,
+  Rocket,
 } from 'lucide-react';
 import {
   LineChart,
@@ -26,6 +30,7 @@ import { ArchitectureRecord, DatasetRecord, TrainingJobRecord } from '../types';
 
 export const TrainingPage: React.FC = () => {
   const currentProject = useAppStore((s) => s.currentProject);
+  const setActiveTab = useAppStore((s) => s.setActiveTab);
   const [architectures, setArchitectures] = useState<ArchitectureRecord[]>([]);
   const [datasets, setDatasets] = useState<DatasetRecord[]>([]);
   const [jobs, setJobs] = useState<TrainingJobRecord[]>([]);
@@ -425,6 +430,32 @@ export const TrainingPage: React.FC = () => {
                       <div className="text-xs font-mono text-slate-300 mt-2 truncate">
                         Saved in Registry
                       </div>
+                    </div>
+                  </div>
+
+                  {/* Flow Action Bar: Proceed to Explain or Deploy */}
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-emerald-500/20 pt-4">
+                    <div className="text-xs text-emerald-300 font-medium flex items-center gap-1.5">
+                      <Sparkles className="h-4 w-4" />
+                      <span>Model training and checkpoint validated. Next recommended action:</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setActiveTab('explainability')}
+                        className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-3.5 py-1.5 text-xs font-semibold text-slate-200 hover:bg-white/[0.08] hover:text-white transition-all"
+                      >
+                        <Eye className="h-3.5 w-3.5 text-cyan-400" />
+                        <span>Inspect &amp; Explain (XAI)</span>
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={() => setActiveTab('deployment')}
+                        className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-emerald-500 to-cyan-500 px-3.5 py-1.5 text-xs font-semibold text-white shadow-md shadow-emerald-500/20 hover:opacity-95 transition-all"
+                      >
+                        <Rocket className="h-3.5 w-3.5" />
+                        <span>Deploy Model to REST API</span>
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </button>
                     </div>
                   </div>
                 </div>

@@ -7,13 +7,19 @@ import {
   BarChart2,
   Fingerprint,
   RefreshCw,
+  BrainCircuit,
+  ArrowRight,
 } from 'lucide-react';
 import { useAppStore } from '../store/appStore';
+import { useStudioStore } from '../store/studioStore';
 import { api } from '../api/client';
 import { DatasetRecord } from '../types';
 
 export const DatasetsPage: React.FC = () => {
   const currentWorkspace = useAppStore((s) => s.currentWorkspace);
+  const setActiveTab = useAppStore((s) => s.setActiveTab);
+  const resetGraph = useStudioStore((s) => s.resetGraph);
+  const updateGraphMetadata = useStudioStore((s) => s.updateGraphMetadata);
   const [datasets, setDatasets] = useState<DatasetRecord[]>([]);
   const [selectedDataset, setSelectedDataset] = useState<DatasetRecord | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -131,9 +137,31 @@ export const DatasetsPage: React.FC = () => {
                     <span>Classes: <strong className="text-slate-200">{selectedDataset.num_classes}</strong></span>
                   </div>
                 </div>
-                <div className="rounded-lg bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                  Verified Schema
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => {
+                      if (selectedDataset.input_shape.length > 1) {
+                        resetGraph('convnet');
+                      } else {
+                        resetGraph('tabular');
+                      }
+                      updateGraphMetadata(
+                        `${selectedDataset.name} Network`,
+                        'classification',
+                        selectedDataset.input_shape
+                      );
+                      setActiveTab('studio');
+                    }}
+                    className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-500 to-cyan-500 px-3.5 py-1.5 text-xs font-semibold text-white shadow-md shadow-indigo-500/25 hover:opacity-95 transition-all"
+                  >
+                    <BrainCircuit className="h-4 w-4" />
+                    <span>Design Model for this Dataset</span>
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </button>
+                  <div className="rounded-lg bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    Verified Schema
+                  </div>
                 </div>
               </div>
 
