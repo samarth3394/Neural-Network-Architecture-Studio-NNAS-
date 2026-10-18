@@ -226,7 +226,8 @@ export const DatasetsPage: React.FC = () => {
                       updateGraphMetadata(
                         `${selectedDataset.name} Network`,
                         'classification',
-                        selectedDataset.input_shape
+                        selectedDataset.input_shape,
+                        selectedDataset.num_classes
                       );
                       setActiveTab('studio');
                     }}

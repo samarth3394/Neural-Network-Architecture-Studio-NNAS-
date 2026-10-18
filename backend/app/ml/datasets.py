@@ -429,6 +429,7 @@ class DatasetManager:
         color_mode: str = "grayscale",
     ) -> Tuple[np.ndarray, np.ndarray, Dict[str, Any]]:
         import io
+        import re
         import zipfile
         from PIL import Image
 
@@ -440,6 +441,39 @@ class DatasetManager:
         raw_labels = []
 
         with zipfile.ZipFile(file_path, "r") as z:
+            # 1. Check for YOLO / Roboflow structure (data.yaml + labels/*.txt)
+            yolo_classes = None
+            yolo_label_map = {}
+            yaml_entries = [e for e in z.namelist() if e.endswith("data.yaml") or e.endswith("data.yml")]
+            if yaml_entries:
+                try:
+                    yaml_content = z.read(yaml_entries[0]).decode("utf-8", errors="ignore")
+                    m = re.search(r"names:\s*\[(.*?)\]", yaml_content, re.DOTALL)
+                    if m:
+                        yolo_classes = [c.strip().strip("'\"") for c in m.group(1).split(",") if c.strip()]
+                    else:
+                        m_dict = re.findall(r"^\s*(\d+)\s*:\s*['\"]?([^'\"\n]+)['\"]?", yaml_content, re.MULTILINE)
+                        if m_dict:
+                            yolo_classes = [name.strip() for idx, name in sorted(m_dict, key=lambda x: int(x[0]))]
+                except Exception:
+                    yolo_classes = None
+
+            if yolo_classes:
+                for e in z.namelist():
+                    if e.endswith(".txt") and ("/labels/" in e.replace("\\", "/")):
+                        stem = os.path.splitext(os.path.basename(e))[0]
+                        try:
+                            txt_content = z.read(e).decode("utf-8", errors="ignore").strip()
+                            if txt_content:
+                                first_line = txt_content.split("\n")[0].strip()
+                                tokens = first_line.split()
+                                if tokens:
+                                    idx = int(tokens[0])
+                                    if 0 <= idx < len(yolo_classes):
+                                        yolo_label_map[stem] = yolo_classes[idx]
+                        except Exception:
+                            pass
+
             # Filter entries ignoring hidden Mac/Linux archive artifacts
             entries = [
                 e for e in z.namelist()
@@ -454,14 +488,22 @@ class DatasetManager:
                 )
 
             for entry in entries:
-                # Infer class label from parent folder name
-                # e.g., 'pneumonia/person1_virus_11.jpeg' -> 'pneumonia'
-                # or 'chest_xray/train/normal/IM-0115-0001.jpeg' -> 'normal'
-                parts = [p for p in entry.replace("\\", "/").split("/") if p]
-                if len(parts) > 1:
-                    label = parts[-2]
+                stem = os.path.splitext(os.path.basename(entry))[0]
+                if yolo_classes and yolo_label_map:
+                    if stem not in yolo_label_map:
+                        continue
+                    label = yolo_label_map[stem]
                 else:
-                    label = "class_0"
+                    parts = [p for p in entry.replace("\\", "/").split("/") if p]
+                    # Filter out generic directories like 'images', 'train', 'val', 'valid', 'test'
+                    generic_dirs = {"images", "image", "img", "imgs", "train", "test", "val", "valid", "data", "dataset"}
+                    meaningful_parts = [p for p in parts[:-1] if p.lower() not in generic_dirs]
+                    if meaningful_parts:
+                        label = meaningful_parts[-1]
+                    elif len(parts) > 1:
+                        label = parts[-2]
+                    else:
+                        label = "class_0"
 
                 try:
                     img_bytes = z.read(entry)

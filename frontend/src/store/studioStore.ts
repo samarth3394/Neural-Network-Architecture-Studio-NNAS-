@@ -14,7 +14,7 @@ interface StudioState {
   historyIndex: number;
 
   setGraph: (graph: ArchitectureGraph) => void;
-  updateGraphMetadata: (name: string, task: 'classification' | 'regression', inputShape: number[]) => void;
+  updateGraphMetadata: (name: string, task: 'classification' | 'regression', inputShape: number[], numClasses?: number) => void;
   addNode: (node: ArchitectureNode) => void;
   updateNodePosition: (id: string, position: { x: number; y: number }) => void;
   updateNodeParameters: (id: string, params: Record<string, any>) => void;
@@ -76,11 +76,15 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     get().validateGraph();
   },
 
-  updateGraphMetadata: (name, task, inputShape) => {
+  updateGraphMetadata: (name, task, inputShape, numClasses) => {
     const prev = get().graph;
-    const updatedNodes = prev.nodes.map((node) => {
+    const finalNumClasses = numClasses ?? prev.num_classes ?? 10;
+    const updatedNodes = prev.nodes.map((node, idx) => {
       if (node.type === 'Input') {
         return { ...node, parameters: { ...node.parameters, shape: inputShape } };
+      }
+      if (idx === prev.nodes.length - 1 && node.type === 'Linear') {
+        return { ...node, parameters: { ...node.parameters, out_features: finalNumClasses } };
       }
       return node;
     });
@@ -89,6 +93,7 @@ export const useStudioStore = create<StudioState>((set, get) => ({
       name,
       task,
       input_shape: inputShape,
+      num_classes: finalNumClasses,
       nodes: updatedNodes,
     };
     set({ graph: updated, isDirty: true });

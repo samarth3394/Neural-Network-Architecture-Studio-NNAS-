@@ -148,7 +148,7 @@ class JobQueueManager:
                 color_mode=schema_info.get("color_mode"),
             )
 
-            is_classification = dataset_db.num_classes > 1 and graph.task == "classification"
+            is_classification = (dataset_db.num_classes > 1 or dataset_db.dataset_type in ("custom_image_zip", "mnist")) and graph.task == "classification"
             class_names = data["metadata"].get("classes", [])
 
             ckpt_dir = os.path.join(settings.LOCAL_STORAGE_DIR, "checkpoints", job.id)

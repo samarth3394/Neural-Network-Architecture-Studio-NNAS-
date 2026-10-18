@@ -100,11 +100,24 @@ class TrainingJobExecutor:
                 outputs = model(batch_x)
 
                 if is_classification:
+                    if outputs.shape[-1] < (batch_y.max().item() + 1):
+                        raise ValueError(
+                            f"Model output dimension ({outputs.shape[-1]}) does not match dataset class index ({batch_y.max().item()}). "
+                            f"Please ensure your final layer 'out_features' in Studio matches the number of dataset classes."
+                        )
                     loss = criterion(outputs, batch_y)
                     preds = torch.argmax(outputs, dim=-1)
                     correct_train += (preds == batch_y).sum().item()
                 else:
-                    loss = criterion(outputs, batch_y)
+                    if outputs.squeeze().shape != batch_y.shape:
+                        if outputs.squeeze().numel() == batch_y.numel():
+                            outputs = outputs.view_as(batch_y)
+                        else:
+                            raise ValueError(
+                                f"Output shape mismatch: Model outputs shape {list(outputs.shape)} but target has shape {list(batch_y.shape)}. "
+                                f"For classification tasks, ensure the final Linear layer out_features matches the number of classes in the dataset."
+                            )
+                    loss = criterion(outputs.view_as(batch_y), batch_y)
 
                 loss.backward()
                 optimizer.step()
@@ -124,7 +137,7 @@ class TrainingJobExecutor:
             with torch.no_grad():
                 for val_x, val_y in val_loader:
                     val_out = model(val_x)
-                    val_loss = criterion(val_out, val_y)
+                    val_loss = criterion(val_out, val_y) if is_classification else criterion(val_out.view_as(val_y), val_y)
                     total_val_loss += val_loss.item() * len(val_y)
                     total_val_samples += len(val_y)
                     if is_classification:
