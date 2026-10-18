@@ -58,7 +58,9 @@ class DeploymentInferenceEngine:
         arr = np.array(input_data, dtype=np.float32)
 
         expected_shape = list(self.architecture_graph.input_shape)
-        # Check if single sample or batch
+        prod_expected = int(np.prod(expected_shape))
+
+        # Check if single sample, batch, or matching total elements
         if list(arr.shape) == expected_shape:
             # Single sample: add batch dimension
             tensor = torch.tensor(arr).unsqueeze(0)
@@ -67,9 +69,18 @@ class DeploymentInferenceEngine:
             # Batched
             tensor = torch.tensor(arr)
             is_single = False
+        elif arr.size == prod_expected:
+            # Automatic reshape: single sample provided flattened or 2D matrix
+            tensor = torch.tensor(arr.reshape([1] + expected_shape))
+            is_single = True
+        elif arr.size > 0 and arr.size % prod_expected == 0:
+            # Automatic reshape: batched provided flattened
+            batch_n = arr.size // prod_expected
+            tensor = torch.tensor(arr.reshape([batch_n] + expected_shape))
+            is_single = False
         else:
             raise ValueError(
-                f"Shape mismatch: provided {list(arr.shape)}, expected sample shape {expected_shape} (or batch [N, {', '.join(map(str, expected_shape))}])"
+                f"Shape mismatch: provided shape {list(arr.shape)} ({arr.size} numbers), but architecture expects {expected_shape} ({prod_expected} numbers per sample)."
             )
 
         start = time.perf_counter()

@@ -12,6 +12,8 @@ import {
   Copy,
   Check,
   Code2,
+  AlertTriangle,
+  Sliders,
 } from 'lucide-react';
 import { useAppStore } from '../store/appStore';
 import { api } from '../api/client';
@@ -33,11 +35,26 @@ export const DeploymentPage: React.FC = () => {
   // Testing & Benchmark
   const [inputDataStr, setInputDataStr] = useState('[5.1, 3.5, 1.4, 0.2]');
   const [testResult, setTestResult] = useState<any>(null);
+  const [testError, setTestError] = useState<string | null>(null);
   const [isTesting, setIsTesting] = useState(false);
 
   const [benchmarkResult, setBenchmarkResult] = useState<any>(null);
   const [isBenchmarking, setIsBenchmarking] = useState(false);
   const [copiedSnippet, setCopiedSnippet] = useState<string | null>(null);
+
+  const fillSampleInput = () => {
+    setTestError(null);
+    const isImage = selectedDep?.name.toLowerCase().includes('mnist') || selectedDep?.endpoint_path.toLowerCase().includes('mnist');
+    if (isImage) {
+      // 28x28 normalized matrix with a vertical digit 1 stroke
+      const sample = Array(28).fill(0).map((_, r) =>
+        Array(28).fill(0).map((_, c) => (c >= 13 && c <= 15 && r >= 5 && r <= 22 ? 0.95 : 0.0))
+      );
+      setInputDataStr(JSON.stringify(sample));
+    } else {
+      setInputDataStr('[5.1, 3.5, 1.4, 0.2]');
+    }
+  };
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -87,12 +104,14 @@ export const DeploymentPage: React.FC = () => {
   const handleTestInference = async () => {
     if (!selectedDep) return;
     setIsTesting(true);
+    setTestError(null);
+    setTestResult(null);
     try {
       const parsed = JSON.parse(inputDataStr);
       const res = await api.predictDeployment(selectedDep.id, parsed);
       setTestResult(res);
     } catch (e: any) {
-      alert(`Inference error: ${e.message}`);
+      setTestError(e.message || 'Inference execution failed');
     } finally {
       setIsTesting(false);
     }
@@ -274,34 +293,75 @@ export const DeploymentPage: React.FC = () => {
               <div className="rounded-2xl border border-studio-800 bg-studio-900/60 p-5 backdrop-blur-sm space-y-3">
                 <div className="flex items-center justify-between">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-                    <Send className="h-4 w-4 text-accent-blue" />
+                    <Send className="h-4 w-4 text-blue-400" />
                     REST Inference Request Tester
                   </h4>
-                  <span className="text-[10px] text-slate-500 font-mono">JSON Sample or Batch</span>
+                  <button
+                    type="button"
+                    onClick={fillSampleInput}
+                    className="flex items-center gap-1.5 rounded border border-slate-700 bg-slate-800 px-2.5 py-1 text-[11px] font-medium text-blue-400 hover:bg-slate-700 hover:text-white transition-colors"
+                    title="Populate with a valid sample for this model"
+                  >
+                    <Sliders className="h-3 w-3" />
+                    Fill Valid Sample Tensor
+                  </button>
                 </div>
 
                 <div>
                   <textarea
-                    rows={2}
+                    rows={3}
                     value={inputDataStr}
-                    onChange={(e) => setInputDataStr(e.target.value)}
+                    onChange={(e) => {
+                      setInputDataStr(e.target.value);
+                      setTestError(null);
+                    }}
                     placeholder="[5.1, 3.5, 1.4, 0.2] or [[...], [...]]"
-                    className="w-full rounded-xl border border-studio-700 bg-studio-950 p-3 font-mono text-xs text-slate-200 focus:border-accent-blue focus:outline-none"
+                    className="w-full rounded-md border border-slate-800 bg-slate-950 p-3 font-mono text-xs text-slate-200 focus:border-blue-500 focus:outline-none"
                   />
                 </div>
 
-                <button
-                  onClick={handleTestInference}
-                  disabled={isTesting}
-                  className="flex items-center gap-1.5 rounded-lg bg-accent-blue px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-blue-500/20 hover:bg-blue-600 disabled:opacity-50"
-                >
-                  <Play className="h-3.5 w-3.5" />
-                  {isTesting ? 'Sending Request...' : 'Send Inference Request'}
-                </button>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={handleTestInference}
+                    disabled={isTesting}
+                    className="flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-500 disabled:opacity-50 transition-colors"
+                  >
+                    <Play className="h-3.5 w-3.5" />
+                    {isTesting ? 'Sending Request...' : 'Send Inference Request'}
+                  </button>
+                  <span className="text-[11px] text-slate-500 font-mono">
+                    Direct execution via in-memory warm PyTorch engine
+                  </span>
+                </div>
+
+                {/* In-line Diagnostic Card on Shape/Inference Error */}
+                {testError && (
+                  <div className="mt-3 rounded-md border border-rose-500/40 bg-rose-950/40 p-3.5 text-xs text-rose-200">
+                    <div className="font-bold flex items-center gap-1.5 text-rose-300">
+                      <AlertTriangle className="h-4 w-4 text-rose-400 shrink-0" />
+                      <span>Input Tensor Shape Mismatch:</span>
+                    </div>
+                    <div className="mt-1.5 font-mono text-[11px] text-rose-200 bg-black/40 p-2 rounded border border-rose-500/20 break-words">
+                      {testError}
+                    </div>
+                    <div className="mt-2.5 text-[11px] text-slate-300 flex flex-wrap items-center justify-between gap-2 border-t border-rose-500/20 pt-2">
+                      <span>The active deployed model expects an image tensor or matrix, but fewer numbers were sent.</span>
+                      <button
+                        type="button"
+                        onClick={fillSampleInput}
+                        className="rounded bg-blue-600 px-2.5 py-1 text-white text-[11px] font-semibold hover:bg-blue-500 transition-colors flex items-center gap-1"
+                      >
+                        <Sliders className="h-3 w-3" />
+                        Click to Auto-Fill Valid Sample
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {testResult && (
-                  <div className="mt-3 rounded-xl border border-studio-800 bg-studio-950 p-4 font-mono text-xs space-y-2">
-                    <div className="flex justify-between text-slate-400 border-b border-studio-900 pb-2">
+                  <div className="mt-3 rounded-md border border-slate-800 bg-slate-950 p-4 font-mono text-xs space-y-2">
+                    <div className="flex justify-between text-slate-400 border-b border-slate-800 pb-2">
                       <span>Server Latency: <strong className="text-emerald-400">{testResult.latency_ms} ms</strong></span>
                       <span>Batch Size: {testResult.batch_size}</span>
                     </div>
