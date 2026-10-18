@@ -45,7 +45,7 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-[#07090e] p-4 text-slate-100">
+    <div className="relative flex min-h-screen w-full items-center justify-center overflow-y-auto py-12 px-4 bg-[#07090e] text-slate-100">
       {/* Background Neural Grid & Ambient Radial Light */}
       <div className="pointer-events-none absolute inset-0 neural-grid opacity-60" />
       <div className="pointer-events-none absolute -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[450px] bg-indigo-600/15 blur-[120px] rounded-full" />

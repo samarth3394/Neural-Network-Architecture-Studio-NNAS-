@@ -25,7 +25,7 @@ export const LandingPage: React.FC = () => {
   const isAuthenticated = useAppStore((s) => s.isAuthenticated);
 
   return (
-    <div className="relative min-h-screen w-full overflow-y-auto bg-[#07090e] text-slate-100 selection:bg-indigo-500/30 selection:text-indigo-200">
+    <div className="relative min-h-screen w-full bg-[#07090e] text-slate-100 selection:bg-indigo-500/30 selection:text-indigo-200">
       {/* Background Glows & Neural Grid */}
       <div className="pointer-events-none fixed inset-0 z-0 neural-grid opacity-70" />
       <div className="pointer-events-none fixed -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[550px] bg-gradient-to-tr from-indigo-600/15 via-purple-600/15 to-cyan-500/10 blur-[130px] rounded-full" />
