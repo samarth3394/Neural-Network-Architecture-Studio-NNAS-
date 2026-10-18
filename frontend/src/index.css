@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#080b11] text-slate-100 font-sans antialiased;
+  }
+}
+
+/* Custom modern scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0b0f17;
+}
+::-webkit-scrollbar-thumb {
+  background: #232f48;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3b82f6;
+}
+
+/* React Flow custom styling for dark mode */
+.react-flow__background {
+  background-color: #07090e !important;
+}
+.react-flow__controls {
+  background: #111726 !important;
+  border: 1px solid #232f48 !important;
+  border-radius: 8px !important;
+  overflow: hidden;
+}
+.react-flow__controls-button {
+  background: #111726 !important;
+  border-bottom: 1px solid #232f48 !important;
+  color: #94aee0 !important;
+  fill: #94aee0 !important;
+}
+.react-flow__controls-button:hover {
+  background: #182032 !important;
+  color: #ffffff !important;
+  fill: #ffffff !important;
+}
+.react-flow__edge-path {
+  stroke: #3b82f6 !important;
+  stroke-width: 2 !important;
+}
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: #06b6d4 !important;
+  stroke-width: 3 !important;
+}
+
+/* Canvas grid dots */
+.canvas-grid {
+  background-size: 24px 24px;
+  background-image: radial-gradient(circle, #1a2234 1px, transparent 1px);
+}

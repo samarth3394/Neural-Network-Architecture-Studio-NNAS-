@@ -1,0 +1,258 @@
+import React, { useEffect, useState } from 'react';
+import {
+  Database,
+  Upload,
+  CheckCircle2,
+  FileText,
+  BarChart2,
+  Fingerprint,
+  RefreshCw,
+} from 'lucide-react';
+import { useAppStore } from '../store/appStore';
+import { api } from '../api/client';
+import { DatasetRecord } from '../types';
+
+export const DatasetsPage: React.FC = () => {
+  const currentWorkspace = useAppStore((s) => s.currentWorkspace);
+  const [datasets, setDatasets] = useState<DatasetRecord[]>([]);
+  const [selectedDataset, setSelectedDataset] = useState<DatasetRecord | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadName, setUploadName] = useState('');
+  const [targetColumn, setTargetColumn] = useState('');
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const loadDatasets = async () => {
+    try {
+      const data = await api.getDatasets();
+      setDatasets(data);
+      if (data.length > 0 && !selectedDataset) {
+        setSelectedDataset(data[0]);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  useEffect(() => {
+    loadDatasets();
+  }, [currentWorkspace]);
+
+  const handleUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentWorkspace || !uploadFile || !uploadName.trim()) return;
+    setLoading(true);
+    try {
+      const created = await api.uploadCsvDataset(
+        currentWorkspace.id,
+        uploadName,
+        uploadFile,
+        targetColumn.trim() || undefined
+      );
+      await loadDatasets();
+      setSelectedDataset(created);
+      setIsUploading(false);
+      setUploadName('');
+      setTargetColumn('');
+      setUploadFile(null);
+    } catch (e: any) {
+      alert(`Upload failed: ${e.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="h-full overflow-y-auto p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-white">Dataset Registry & Schema Quality</h1>
+          <p className="text-xs text-slate-400 mt-1">
+            Certified training, validation, and test datasets with zero-leakage preprocessing pipelines
+          </p>
+        </div>
+        <button
+          onClick={() => setIsUploading(true)}
+          className="flex items-center gap-1.5 rounded-lg bg-accent-blue px-3.5 py-2 text-xs font-semibold text-white shadow-lg shadow-blue-500/20 hover:bg-blue-600"
+        >
+          <Upload className="h-4 w-4" />
+          Upload CSV Dataset
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Datasets List */}
+        <div className="space-y-3">
+          <div className="text-xs font-bold uppercase tracking-wider text-slate-400">Available Datasets</div>
+          <div className="space-y-2">
+            {datasets.map((d) => {
+              const isSelected = d.id === selectedDataset?.id;
+              return (
+                <div
+                  key={d.id}
+                  onClick={() => setSelectedDataset(d)}
+                  className={`cursor-pointer rounded-xl border p-4 transition-all duration-150 ${
+                    isSelected
+                      ? 'border-accent-blue bg-studio-900/90 shadow-md ring-1 ring-accent-blue/30'
+                      : 'border-studio-800 bg-studio-900/50 hover:border-studio-700 hover:bg-studio-900'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Database className={`h-4 w-4 ${isSelected ? 'text-accent-blue' : 'text-slate-400'}`} />
+                      <h4 className="text-xs font-semibold text-white">{d.name}</h4>
+                    </div>
+                    <span className="rounded bg-studio-800 px-1.5 py-0.5 text-[9px] font-mono text-slate-400 uppercase">
+                      {d.dataset_type}
+                    </span>
+                  </div>
+                  <div className="mt-2 flex items-center justify-between text-[11px] text-slate-400 font-mono">
+                    <span>{d.num_samples.toLocaleString()} samples</span>
+                    <span>shape: [{d.input_shape.join(', ')}]</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Selected Dataset Inspection */}
+        <div className="lg:col-span-2 rounded-2xl border border-studio-800 bg-studio-900/60 p-5 backdrop-blur-sm">
+          {selectedDataset ? (
+            <div className="space-y-5">
+              <div className="flex items-center justify-between border-b border-studio-800 pb-4">
+                <div>
+                  <h3 className="text-base font-bold text-white">{selectedDataset.name}</h3>
+                  <div className="mt-1 flex items-center gap-3 text-xs text-slate-400">
+                    <span>Type: <strong className="text-slate-200">{selectedDataset.dataset_type}</strong></span>
+                    <span>•</span>
+                    <span>Total Samples: <strong className="text-slate-200">{selectedDataset.num_samples.toLocaleString()}</strong></span>
+                    <span>•</span>
+                    <span>Classes: <strong className="text-slate-200">{selectedDataset.num_classes}</strong></span>
+                  </div>
+                </div>
+                <div className="rounded-lg bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  Verified Schema
+                </div>
+              </div>
+
+              {/* Data Quality & Fingerprint */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="rounded-xl border border-studio-800 bg-studio-950 p-4 space-y-2">
+                  <span className="text-[11px] font-semibold uppercase text-slate-400 flex items-center gap-1.5">
+                    <Fingerprint className="h-3.5 w-3.5 text-accent-cyan" />
+                    Dataset Fingerprint (SHA-256)
+                  </span>
+                  <div className="font-mono text-[10px] text-slate-300 break-all bg-studio-900 p-2 rounded border border-studio-800">
+                    {selectedDataset.fingerprint || 'Standard Benchmark Seed Fingerprint'}
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-studio-800 bg-studio-950 p-4 space-y-2">
+                  <span className="text-[11px] font-semibold uppercase text-slate-400 flex items-center gap-1.5">
+                    <BarChart2 className="h-3.5 w-3.5 text-accent-blue" />
+                    Split Partitioning Policy
+                  </span>
+                  <div className="text-xs text-slate-300 space-y-1">
+                    <div>• 70% Train, 15% Validation, 15% Held-Out Test</div>
+                    <div>• Zero Leakage: Normalization scalers fit strictly on train</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Schema Details */}
+              {selectedDataset.schema_info && (
+                <div className="rounded-xl border border-studio-800 bg-studio-950 p-4">
+                  <h4 className="text-xs font-semibold text-slate-300 mb-2">Class Distribution & Feature Schema</h4>
+                  {selectedDataset.schema_info.class_distribution ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 font-mono text-xs">
+                      {Object.entries(selectedDataset.schema_info.class_distribution).map(([cls, count]) => (
+                        <div key={cls} className="rounded bg-studio-900 border border-studio-800 p-2 text-center">
+                          <div className="text-slate-400 text-[10px]">Class {cls}</div>
+                          <div className="text-accent-cyan font-bold mt-0.5">{String(count)}</div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <pre className="text-xs font-mono text-slate-400 overflow-x-auto bg-studio-900 p-3 rounded">
+                      {JSON.stringify(selectedDataset.schema_info, null, 2)}
+                    </pre>
+                  )}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="py-12 text-center text-xs text-slate-500">Select a dataset to inspect schema properties</div>
+          )}
+        </div>
+      </div>
+
+      {/* CSV Upload Modal */}
+      {isUploading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+          <form
+            onSubmit={handleUpload}
+            className="w-full max-w-md rounded-2xl border border-studio-700 bg-studio-900 p-6 shadow-2xl"
+          >
+            <h3 className="text-base font-bold text-white">Upload Tabular CSV Dataset</h3>
+            <p className="text-xs text-slate-400 mt-1">Automatic schema inspection, missing-value imputation, and normalization</p>
+
+            <div className="mt-4 space-y-3">
+              <div>
+                <label className="text-xs font-medium text-slate-300">Dataset Name</label>
+                <input
+                  type="text"
+                  required
+                  value={uploadName}
+                  onChange={(e) => setUploadName(e.target.value)}
+                  placeholder="e.g. Customer Churn Tabular"
+                  className="mt-1 w-full rounded-lg border border-studio-700 bg-studio-950 px-3 py-2 text-xs text-slate-200 focus:border-accent-blue focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-slate-300">Target Column (optional, defaults to last column)</label>
+                <input
+                  type="text"
+                  value={targetColumn}
+                  onChange={(e) => setTargetColumn(e.target.value)}
+                  placeholder="e.g. churn_label or target"
+                  className="mt-1 w-full rounded-lg border border-studio-700 bg-studio-950 px-3 py-2 text-xs text-slate-200 focus:border-accent-blue focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-slate-300">CSV File</label>
+                <input
+                  type="file"
+                  required
+                  accept=".csv"
+                  onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
+                  className="mt-1 w-full rounded-lg border border-studio-700 bg-studio-950 px-3 py-2 text-xs text-slate-400 file:mr-3 file:rounded file:border-0 file:bg-studio-800 file:px-2.5 file:py-1 file:text-xs file:text-slate-200 hover:file:bg-studio-700"
+                />
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setIsUploading(false)}
+                className="rounded-lg border border-studio-700 px-4 py-2 text-xs font-medium text-slate-300 hover:bg-studio-800"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="rounded-lg bg-accent-blue px-4 py-2 text-xs font-semibold text-white hover:bg-blue-600 disabled:opacity-50"
+              >
+                {loading ? 'Uploading & Validating...' : 'Upload & Register'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+    </div>
+  );
+};

@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: nnas-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: nnas_db
+      POSTGRES_USER: nnas_user
+      POSTGRES_PASSWORD: nnas_secure_password_replace_in_prod
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nnas_user -d nnas_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nnas-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: nnas-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - nnas-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: nnas-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgresql://nnas_user:nnas_secure_password_replace_in_prod@postgres:5432/nnas_db
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: ${SECRET_KEY:-nnas-production-super-secret-key-change-in-env-2026}
+      STORAGE_TYPE: local
+      LOCAL_STORAGE_DIR: /app/storage
+    ports:
+      - "8000:8000"
+    volumes:
+      - artifact_storage:/app/storage
+    networks:
+      - nnas-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: nnas-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+    networks:
+      - nnas-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  artifact_storage:
+
+networks:
+  nnas-network:
+    driver: bridge
