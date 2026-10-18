@@ -32,10 +32,14 @@ interface AppState {
   currentUser: UserRecord | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  targetDatasetId: string | null;
+  targetArchId: string | null;
 
   setActiveTab: (tab: AppTab) => void;
   setCurrentWorkspace: (ws: WorkspaceRecord) => void;
   setCurrentProject: (proj: ProjectRecord) => void;
+  setTargetDatasetId: (id: string | null) => void;
+  setTargetArchId: (id: string | null) => void;
   initApp: () => Promise<void>;
   refreshProjects: () => Promise<void>;
   loginUser: (formData: FormData) => Promise<void>;
@@ -52,8 +56,12 @@ export const useAppStore = create<AppState>((set, get) => ({
   currentUser: null,
   isAuthenticated: false,
   isLoading: true,
+  targetDatasetId: null,
+  targetArchId: null,
 
   setActiveTab: (tab) => set({ activeTab: tab }),
+  setTargetDatasetId: (id) => set({ targetDatasetId: id }),
+  setTargetArchId: (id) => set({ targetArchId: id }),
 
   setCurrentWorkspace: (ws) => {
     set({ currentWorkspace: ws });

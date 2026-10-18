@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import {
   PenTool,
   RotateCcw,
-  Sparkles,
+  Activity,
   Layers,
   HelpCircle,
   Eye,
@@ -156,11 +156,12 @@ export const ExplainabilityPage: React.FC = () => {
           </div>
 
           <button
+            type="button"
             onClick={handlePredict}
             disabled={isInferring}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent-blue py-3 text-xs font-semibold text-white shadow-lg shadow-blue-500/20 hover:bg-blue-600 disabled:opacity-50"
+            className="flex w-full items-center justify-center gap-2 rounded-md bg-blue-600 py-2.5 text-xs font-semibold text-white hover:bg-blue-500 disabled:opacity-50 transition-colors"
           >
-            <Sparkles className="h-4 w-4" />
+            <Activity className="h-4 w-4" />
             {isInferring ? 'Inferring Forward Pass...' : 'Run Real Model Inference'}
           </button>
         </div>
@@ -276,8 +277,9 @@ export const ExplainabilityPage: React.FC = () => {
               Model verified with explainability?
             </div>
             <button
+              type="button"
               onClick={() => setActiveTab('deployment')}
-              className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-500 to-cyan-500 px-3.5 py-1.5 text-xs font-semibold text-white shadow-md shadow-indigo-500/25 hover:opacity-95 transition-all"
+              className="flex items-center gap-1.5 rounded-md bg-blue-600 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-blue-500 transition-colors"
             >
               <Rocket className="h-3.5 w-3.5" />
               <span>Proceed to Deployment &amp; Serving</span>

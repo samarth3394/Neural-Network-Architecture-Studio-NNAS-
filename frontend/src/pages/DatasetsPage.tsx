@@ -9,6 +9,7 @@ import {
   RefreshCw,
   BrainCircuit,
   ArrowRight,
+  PlayCircle,
 } from 'lucide-react';
 import { useAppStore } from '../store/appStore';
 import { useStudioStore } from '../store/studioStore';
@@ -18,6 +19,7 @@ import { DatasetRecord } from '../types';
 export const DatasetsPage: React.FC = () => {
   const currentWorkspace = useAppStore((s) => s.currentWorkspace);
   const setActiveTab = useAppStore((s) => s.setActiveTab);
+  const setTargetDatasetId = useAppStore((s) => s.setTargetDatasetId);
   const resetGraph = useStudioStore((s) => s.resetGraph);
   const updateGraphMetadata = useStudioStore((s) => s.updateGraphMetadata);
   const [datasets, setDatasets] = useState<DatasetRecord[]>([]);
@@ -137,8 +139,9 @@ export const DatasetsPage: React.FC = () => {
                     <span>Classes: <strong className="text-slate-200">{selectedDataset.num_classes}</strong></span>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2.5">
                   <button
+                    type="button"
                     onClick={() => {
                       if (selectedDataset.input_shape.length > 1) {
                         resetGraph('convnet');
@@ -152,13 +155,27 @@ export const DatasetsPage: React.FC = () => {
                       );
                       setActiveTab('studio');
                     }}
-                    className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-500 to-cyan-500 px-3.5 py-1.5 text-xs font-semibold text-white shadow-md shadow-indigo-500/25 hover:opacity-95 transition-all"
+                    className="flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-500 transition-colors"
                   >
-                    <BrainCircuit className="h-4 w-4" />
+                    <BrainCircuit className="h-3.5 w-3.5" />
                     <span>Design Model for this Dataset</span>
                     <ArrowRight className="h-3.5 w-3.5" />
                   </button>
-                  <div className="rounded-lg bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTargetDatasetId(selectedDataset.id);
+                      setActiveTab('training');
+                    }}
+                    className="flex items-center gap-1.5 rounded-md border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-200 hover:bg-slate-700 hover:text-white transition-colors"
+                  >
+                    <PlayCircle className="h-3.5 w-3.5 text-blue-400" />
+                    <span>Train with this Dataset</span>
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </button>
+
+                  <div className="rounded-md bg-emerald-500/10 px-2 py-1 text-xs font-medium text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
                     <CheckCircle2 className="h-3.5 w-3.5" />
                     Verified Schema
                   </div>

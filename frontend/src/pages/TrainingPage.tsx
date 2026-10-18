@@ -32,6 +32,11 @@ import { ArchitectureRecord, DatasetRecord, TrainingJobRecord } from '../types';
 export const TrainingPage: React.FC = () => {
   const currentProject = useAppStore((s) => s.currentProject);
   const setActiveTab = useAppStore((s) => s.setActiveTab);
+  const targetDatasetId = useAppStore((s) => s.targetDatasetId);
+  const setTargetDatasetId = useAppStore((s) => s.setTargetDatasetId);
+  const targetArchId = useAppStore((s) => s.targetArchId);
+  const setTargetArchId = useAppStore((s) => s.setTargetArchId);
+
   const [architectures, setArchitectures] = useState<ArchitectureRecord[]>([]);
   const [datasets, setDatasets] = useState<DatasetRecord[]>([]);
   const [jobs, setJobs] = useState<TrainingJobRecord[]>([]);
@@ -50,11 +55,21 @@ export const TrainingPage: React.FC = () => {
     try {
       const archs = await api.getArchitectures();
       setArchitectures(archs);
-      if (archs.length > 0 && !selectedArchId) setSelectedArchId(archs[0].id);
+      if (targetArchId && archs.some((a) => a.id === targetArchId)) {
+        setSelectedArchId(targetArchId);
+        setTargetArchId(null);
+      } else if (archs.length > 0 && !selectedArchId) {
+        setSelectedArchId(archs[0].id);
+      }
 
       const dsets = await api.getDatasets();
       setDatasets(dsets);
-      if (dsets.length > 0 && !selectedDatasetId) setSelectedDatasetId(dsets[0].id);
+      if (targetDatasetId && dsets.some((d) => d.id === targetDatasetId)) {
+        setSelectedDatasetId(targetDatasetId);
+        setTargetDatasetId(null);
+      } else if (dsets.length > 0 && !selectedDatasetId) {
+        setSelectedDatasetId(dsets[0].id);
+      }
 
       const allJobs = await api.getTrainingJobs();
       setJobs(allJobs);
@@ -488,21 +503,23 @@ export const TrainingPage: React.FC = () => {
                   {/* Flow Action Bar: Proceed to Explain or Deploy */}
                   <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-emerald-500/20 pt-4">
                     <div className="text-xs text-emerald-300 font-medium flex items-center gap-1.5">
-                      <Sparkles className="h-4 w-4" />
-                      <span>Model training and checkpoint validated. Next recommended action:</span>
+                      <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                      <span>Model checkpoint verified. Recommended next steps:</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <button
+                        type="button"
                         onClick={() => setActiveTab('explainability')}
-                        className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-3.5 py-1.5 text-xs font-semibold text-slate-200 hover:bg-white/[0.08] hover:text-white transition-all"
+                        className="flex items-center gap-1.5 rounded-md border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-200 hover:bg-slate-700 hover:text-white transition-colors"
                       >
-                        <Eye className="h-3.5 w-3.5 text-cyan-400" />
+                        <Eye className="h-3.5 w-3.5 text-blue-400" />
                         <span>Inspect &amp; Explain (XAI)</span>
                         <ArrowRight className="h-3.5 w-3.5" />
                       </button>
                       <button
+                        type="button"
                         onClick={() => setActiveTab('deployment')}
-                        className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-emerald-500 to-cyan-500 px-3.5 py-1.5 text-xs font-semibold text-white shadow-md shadow-emerald-500/20 hover:opacity-95 transition-all"
+                        className="flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-500 transition-colors"
                       >
                         <Rocket className="h-3.5 w-3.5" />
                         <span>Deploy Model to REST API</span>

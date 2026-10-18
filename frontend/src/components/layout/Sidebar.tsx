@@ -6,7 +6,7 @@ import {
   Database,
   PlayCircle,
   GitCompare,
-  Sparkles,
+  Sliders,
   Archive,
   Rocket,
   PenTool,
@@ -14,7 +14,7 @@ import {
   Settings,
   Users,
   ShieldCheck,
-  Globe,
+  Cpu,
 } from 'lucide-react';
 import { useAppStore, AppTab } from '../../store/appStore';
 
@@ -34,7 +34,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'datasets', label: 'Dataset Registry', icon: Database, category: 'ml' },
   { id: 'training', label: 'Training Jobs', icon: PlayCircle, category: 'ml' },
   { id: 'experiments', label: 'Experiment Tracking', icon: GitCompare, category: 'ml' },
-  { id: 'optimization', label: 'Architecture Search', icon: Sparkles, category: 'ml' },
+  { id: 'optimization', label: 'Architecture Search', icon: Sliders, category: 'ml' },
   { id: 'explainability', label: 'Live Explainability', icon: PenTool, category: 'ml' },
   // Deployment & Ops
   { id: 'registry', label: 'Model Registry', icon: Archive, category: 'ops' },
@@ -51,22 +51,23 @@ export const Sidebar: React.FC = () => {
   const setActiveTab = useAppStore((s) => s.setActiveTab);
 
   return (
-    <aside className="flex h-full w-56 flex-col border-r border-white/[0.06] bg-[#090d16]/95 p-3 select-none backdrop-blur-xl">
+    <aside className="flex h-full w-56 flex-col border-r border-slate-800 bg-[#090d16] p-3 select-none">
       <button
+        type="button"
         onClick={() => setActiveTab('landing')}
-        className="mb-3 flex w-full items-center justify-between rounded-xl border border-white/5 bg-white/[0.02] px-3 py-2 text-xs font-medium text-slate-400 hover:border-indigo-500/30 hover:bg-indigo-950/20 hover:text-white transition-all"
+        className="mb-3 flex w-full items-center justify-between rounded-md border border-slate-800 bg-slate-900/60 px-3 py-2 text-xs font-medium text-slate-300 hover:bg-slate-850 hover:text-white transition-colors"
       >
         <span className="flex items-center gap-2">
-          <Globe className="h-3.5 w-3.5 text-cyan-400" />
-          Platform Portal
+          <Cpu className="h-3.5 w-3.5 text-blue-400" />
+          NNAS Studio Portal
         </span>
         <span className="text-[10px] text-slate-500 font-mono">v1.0</span>
       </button>
 
-      <div className="flex-1 space-y-5 overflow-y-auto pr-1">
+      <div className="flex-1 space-y-4 overflow-y-auto pr-1">
         {/* Core Category */}
         <div>
-          <div className="mb-2 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+          <div className="mb-1.5 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
             Studio
           </div>
           <div className="space-y-0.5">
@@ -75,15 +76,16 @@ export const Sidebar: React.FC = () => {
               const isActive = activeTab === item.id;
               return (
                 <button
+                  type="button"
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs transition-all ${
+                  className={`flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-xs transition-colors ${
                     isActive
-                      ? 'bg-gradient-to-r from-indigo-500/20 to-cyan-500/10 text-cyan-300 border border-indigo-500/30 shadow-sm font-semibold'
-                      : 'text-slate-400 hover:bg-white/[0.04] hover:text-slate-200 font-medium'
+                      ? 'bg-blue-600/15 text-blue-400 border border-blue-500/30 font-semibold'
+                      : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 font-medium'
                   }`}
                 >
-                  <Icon className={`h-4 w-4 ${isActive ? 'text-cyan-400' : 'text-slate-400'}`} />
+                  <Icon className={`h-4 w-4 ${isActive ? 'text-blue-400' : 'text-slate-400'}`} />
                   {item.label}
                 </button>
               );
@@ -93,7 +95,7 @@ export const Sidebar: React.FC = () => {
 
         {/* ML Lifecycle */}
         <div>
-          <div className="mb-2 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+          <div className="mb-1.5 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
             Model Lifecycle
           </div>
           <div className="space-y-0.5">
@@ -102,15 +104,16 @@ export const Sidebar: React.FC = () => {
               const isActive = activeTab === item.id;
               return (
                 <button
+                  type="button"
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs transition-all ${
+                  className={`flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-xs transition-colors ${
                     isActive
-                      ? 'bg-gradient-to-r from-indigo-500/20 to-cyan-500/10 text-cyan-300 border border-indigo-500/30 shadow-sm font-semibold'
-                      : 'text-slate-400 hover:bg-white/[0.04] hover:text-slate-200 font-medium'
+                      ? 'bg-blue-600/15 text-blue-400 border border-blue-500/30 font-semibold'
+                      : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 font-medium'
                   }`}
                 >
-                  <Icon className={`h-4 w-4 ${isActive ? 'text-cyan-400' : 'text-slate-400'}`} />
+                  <Icon className={`h-4 w-4 ${isActive ? 'text-blue-400' : 'text-slate-400'}`} />
                   {item.label}
                 </button>
               );
@@ -120,8 +123,8 @@ export const Sidebar: React.FC = () => {
 
         {/* Ops & Deployment */}
         <div>
-          <div className="mb-2 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-            Production & Serving
+          <div className="mb-1.5 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+            Production &amp; Serving
           </div>
           <div className="space-y-0.5">
             {NAV_ITEMS.filter((i) => i.category === 'ops').map((item) => {
@@ -129,15 +132,16 @@ export const Sidebar: React.FC = () => {
               const isActive = activeTab === item.id;
               return (
                 <button
+                  type="button"
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs transition-all ${
+                  className={`flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-xs transition-colors ${
                     isActive
-                      ? 'bg-gradient-to-r from-indigo-500/20 to-cyan-500/10 text-cyan-300 border border-indigo-500/30 shadow-sm font-semibold'
-                      : 'text-slate-400 hover:bg-white/[0.04] hover:text-slate-200 font-medium'
+                      ? 'bg-blue-600/15 text-blue-400 border border-blue-500/30 font-semibold'
+                      : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 font-medium'
                   }`}
                 >
-                  <Icon className={`h-4 w-4 ${isActive ? 'text-cyan-400' : 'text-slate-400'}`} />
+                  <Icon className={`h-4 w-4 ${isActive ? 'text-blue-400' : 'text-slate-400'}`} />
                   {item.label}
                 </button>
               );
@@ -147,7 +151,7 @@ export const Sidebar: React.FC = () => {
 
         {/* Admin & Security */}
         <div>
-          <div className="mb-2 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+          <div className="mb-1.5 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
             Governance
           </div>
           <div className="space-y-0.5">
@@ -156,15 +160,16 @@ export const Sidebar: React.FC = () => {
               const isActive = activeTab === item.id;
               return (
                 <button
+                  type="button"
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs transition-all ${
+                  className={`flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-xs transition-colors ${
                     isActive
-                      ? 'bg-gradient-to-r from-indigo-500/20 to-cyan-500/10 text-cyan-300 border border-indigo-500/30 shadow-sm font-semibold'
-                      : 'text-slate-400 hover:bg-white/[0.04] hover:text-slate-200 font-medium'
+                      ? 'bg-blue-600/15 text-blue-400 border border-blue-500/30 font-semibold'
+                      : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 font-medium'
                   }`}
                 >
-                  <Icon className={`h-4 w-4 ${isActive ? 'text-cyan-400' : 'text-slate-400'}`} />
+                  <Icon className={`h-4 w-4 ${isActive ? 'text-blue-400' : 'text-slate-400'}`} />
                   {item.label}
                 </button>
               );

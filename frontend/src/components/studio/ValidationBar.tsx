@@ -114,8 +114,9 @@ export const ValidationBar: React.FC = () => {
             PyTorch Code
           </button>
           <button
+            type="button"
             onClick={() => setActiveTab('training')}
-            className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-500 to-cyan-500 px-3.5 py-1.5 text-xs font-semibold text-white shadow-md shadow-indigo-500/25 hover:opacity-95 transition-all"
+            className="flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-500 transition-colors"
             title="Proceed to Training"
           >
             <PlayCircle className="h-3.5 w-3.5" />
