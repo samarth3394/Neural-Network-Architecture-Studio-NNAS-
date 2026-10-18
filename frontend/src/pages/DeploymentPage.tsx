@@ -9,6 +9,9 @@ import {
   Clock,
   Send,
   Plus,
+  Copy,
+  Check,
+  Code2,
 } from 'lucide-react';
 import { useAppStore } from '../store/appStore';
 import { api } from '../api/client';
@@ -34,6 +37,13 @@ export const DeploymentPage: React.FC = () => {
 
   const [benchmarkResult, setBenchmarkResult] = useState<any>(null);
   const [isBenchmarking, setIsBenchmarking] = useState(false);
+  const [copiedSnippet, setCopiedSnippet] = useState<string | null>(null);
+
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedSnippet(label);
+    setTimeout(() => setCopiedSnippet(null), 2000);
+  };
 
   const loadData = async () => {
     try {
@@ -190,8 +200,34 @@ export const DeploymentPage: React.FC = () => {
                       ID: {selectedDep.id.slice(0, 8)}
                     </span>
                   </h3>
-                  <div className="mt-1 font-mono text-xs text-accent-cyan">
+                  <div className="mt-1 font-mono text-xs text-blue-400">
                     POST /api/v1/inference/deployments/{selectedDep.id}/predict
+                  </div>
+                  <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard(`http://localhost:8000/api/v1/inference/deployments/${selectedDep.id}/predict`, 'url')}
+                      className="flex items-center gap-1 rounded border border-slate-700 bg-slate-800 px-2 py-1 text-[11px] font-medium text-slate-300 hover:bg-slate-750 hover:text-white transition-colors"
+                    >
+                      {copiedSnippet === 'url' ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
+                      {copiedSnippet === 'url' ? 'URL Copied' : 'Copy Endpoint URL'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard(`curl -X POST http://localhost:8000/api/v1/inference/deployments/${selectedDep.id}/predict -H "Content-Type: application/json" -d '{"inputs": ${inputDataStr}}'`, 'curl')}
+                      className="flex items-center gap-1 rounded border border-slate-700 bg-slate-800 px-2 py-1 text-[11px] font-medium text-slate-300 hover:bg-slate-750 hover:text-white transition-colors"
+                    >
+                      {copiedSnippet === 'curl' ? <Check className="h-3 w-3 text-emerald-400" /> : <Code2 className="h-3 w-3" />}
+                      {copiedSnippet === 'curl' ? 'cURL Copied' : 'Copy cURL Command'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard(`import requests\n\nres = requests.post(\n    "http://localhost:8000/api/v1/inference/deployments/${selectedDep.id}/predict",\n    json={"inputs": ${inputDataStr}}\n)\nprint(res.json())`, 'python')}
+                      className="flex items-center gap-1 rounded border border-slate-700 bg-slate-800 px-2 py-1 text-[11px] font-medium text-slate-300 hover:bg-slate-750 hover:text-white transition-colors"
+                    >
+                      {copiedSnippet === 'python' ? <Check className="h-3 w-3 text-emerald-400" /> : <Code2 className="h-3 w-3" />}
+                      {copiedSnippet === 'python' ? 'Python Copied' : 'Copy Python Snippet'}
+                    </button>
                   </div>
                 </div>
 
