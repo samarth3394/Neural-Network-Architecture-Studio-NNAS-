@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { X, Network, Play, RotateCcw, Sparkles, Sliders, Layers } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { X, Play, RotateCcw, Activity, Layers, Cpu, Info } from 'lucide-react';
 import { useStudioStore } from '../../store/studioStore';
 
 interface HoveredNeuron {
@@ -19,8 +19,17 @@ export const NeuronVisualizerModal: React.FC = () => {
   const [synapseDensity, setSynapseDensity] = useState<'all' | 'hover' | 'sparse'>('all');
 
   const layerShapes = validationResult?.layer_shapes || [];
-  const COLUMN_HEIGHT = 340; // Fixed canonical canvas height for aligned synapse interpolation
-  const SVG_WIDTH = 54;      // Width of the bridge between adjacent layers
+  const COLUMN_HEIGHT = 320;
+  const SVG_WIDTH = 64;
+
+  const totalParams = useMemo(() => {
+    return layerShapes.reduce((acc, l) => acc + (l.param_count || 0), 0);
+  }, [layerShapes]);
+
+  const totalMemoryKb = useMemo(() => {
+    // 4 bytes per float32 parameter
+    return ((totalParams * 4) / 1024).toFixed(1);
+  }, [totalParams]);
 
   // Forward pass signal pulse animation
   useEffect(() => {
@@ -29,12 +38,12 @@ export const NeuronVisualizerModal: React.FC = () => {
       if (animationStep < layerShapes.length) {
         timer = setTimeout(() => {
           setAnimationStep((prev) => prev + 1);
-        }, 350);
+        }, 320);
       } else {
         timer = setTimeout(() => {
           setIsAnimating(false);
           setAnimationStep(-1);
-        }, 500);
+        }, 400);
       }
     }
     return () => clearTimeout(timer);
@@ -48,92 +57,99 @@ export const NeuronVisualizerModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md">
-      <div className="flex h-[90vh] w-full max-w-6xl flex-col rounded-2xl border border-white/10 bg-[#0a0e18] shadow-2xl overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/[0.08] px-6 py-4 bg-[#070a12]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm">
+      <div className="flex h-[92vh] w-full max-w-6xl flex-col rounded-xl border border-slate-800 bg-[#090d16] shadow-2xl overflow-hidden">
+        {/* Engineering Header */}
+        <div className="flex items-center justify-between border-b border-slate-800 px-6 py-3.5 bg-[#060911]">
           <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-gradient-to-tr from-indigo-500/20 to-cyan-500/20 p-2 text-cyan-400 border border-white/10 shadow-sm">
-              <Network className="h-5 w-5" />
+            <div className="rounded-lg bg-slate-900 p-2 text-blue-400 border border-slate-800">
+              <Cpu className="h-4 w-4" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-white tracking-tight">
-                  Neuron-Level Architecture Topology
+              <div className="flex items-center gap-2.5">
+                <h2 className="text-sm font-semibold text-white tracking-tight">
+                  Neuron Topology & Tensor Flow Graph
                 </h2>
-                <span className="rounded-full bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 text-[10px] font-mono text-indigo-300">
-                  Synaptic Mesh Active
+                <span className="rounded bg-slate-800 px-2 py-0.5 text-[10px] font-mono text-slate-300 border border-slate-700">
+                  {layerShapes.length} Stages • {totalParams.toLocaleString()} Parameters
+                </span>
+                <span className="rounded bg-blue-950/70 border border-blue-800/80 px-2 py-0.5 text-[10px] font-mono text-blue-400">
+                  ~{totalMemoryKb} KB Weight Footprint
                 </span>
               </div>
-              <p className="text-xs text-slate-400">
-                Interactive synapse connection graph showing feedforward weight paths and layer transformations
+              <p className="text-[11px] text-slate-400 mt-0.5 font-mono">
+                Interactive layer boundary projection with feedforward synapse routing and dimension transforms
               </p>
             </div>
           </div>
 
-          {/* Controls Bar */}
-          <div className="flex items-center gap-3">
+          {/* Action Toolbar */}
+          <div className="flex items-center gap-2.5">
             <button
+              type="button"
               onClick={triggerAnimation}
               disabled={isAnimating}
-              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
                 isAnimating
-                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 animate-pulse'
-                  : 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-md shadow-indigo-600/20'
+                  ? 'bg-blue-600/30 text-blue-300 border border-blue-500/50'
+                  : 'bg-blue-600 text-white hover:bg-blue-500 shadow-sm'
               }`}
             >
-              <Play className="h-3.5 w-3.5" />
-              {isAnimating ? `Propagating Layer ${animationStep + 1}...` : 'Simulate Forward Pass'}
+              <Play className="h-3.5 w-3.5 fill-current" />
+              <span>{isAnimating ? `Propagating Stage ${animationStep + 1}/${layerShapes.length}...` : 'Simulate Forward Pass'}</span>
             </button>
 
             {/* Density Selector */}
-            <div className="flex items-center rounded-lg border border-white/10 bg-white/[0.03] p-0.5 text-xs">
+            <div className="flex items-center rounded-md border border-slate-800 bg-slate-950 p-0.5 text-xs">
               <button
+                type="button"
                 onClick={() => setSynapseDensity('all')}
                 className={`rounded px-2.5 py-1 text-[11px] font-medium transition-colors ${
                   synapseDensity === 'all'
-                    ? 'bg-indigo-600/40 text-white font-semibold'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-slate-800 text-white font-medium'
+                    : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
                 All Synapses
               </button>
               <button
+                type="button"
                 onClick={() => setSynapseDensity('hover')}
                 className={`rounded px-2.5 py-1 text-[11px] font-medium transition-colors ${
                   synapseDensity === 'hover'
-                    ? 'bg-indigo-600/40 text-white font-semibold'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-slate-800 text-white font-medium'
+                    : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
                 Hover Focus
               </button>
               <button
+                type="button"
                 onClick={() => setSynapseDensity('sparse')}
                 className={`rounded px-2.5 py-1 text-[11px] font-medium transition-colors ${
                   synapseDensity === 'sparse'
-                    ? 'bg-indigo-600/40 text-white font-semibold'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-slate-800 text-white font-medium'
+                    : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
-                Sparse
+                Sparse (50%)
               </button>
             </div>
 
             <button
+              type="button"
               onClick={() => setNeuronModalOpen(false)}
-              className="rounded-lg p-1.5 text-slate-400 hover:bg-white/[0.08] hover:text-white transition-colors"
+              className="rounded-md p-1.5 text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors ml-1"
             >
-              <X className="h-5 w-5" />
+              <X className="h-4 w-4" />
             </button>
           </div>
         </div>
 
         {/* Visualizer Canvas Area */}
-        <div className="flex-1 overflow-x-auto overflow-y-hidden p-6 canvas-grid flex flex-col justify-between">
-          <div className="flex min-w-max items-center justify-center py-6 px-4">
+        <div className="flex-1 overflow-x-auto overflow-y-hidden p-6 flex flex-col justify-between bg-[#060810]">
+          <div className="flex min-w-max items-center justify-center py-4 px-2">
             {layerShapes.map((layer, layerIdx) => {
-              // Bounded neuron count to prevent DOM bottleneck while keeping full architectural fidelity
               const rawDim = layer.output_shape.reduce((a, b) => a * b, 1);
               const displayNeurons = Math.min(rawDim, 10);
 
@@ -145,25 +161,28 @@ export const NeuronVisualizerModal: React.FC = () => {
 
               return (
                 <React.Fragment key={layer.node_id}>
-                  {/* Layer Column */}
+                  {/* Layer Stage Chassis */}
                   <div className="flex flex-col items-center shrink-0 z-10">
-                    {/* Layer Header */}
-                    <div className="mb-3 text-center">
-                      <span className="text-xs font-bold text-white flex items-center justify-center gap-1">
+                    {/* Stage Header Info */}
+                    <div className="mb-3 text-center space-y-1">
+                      <div className="text-[9px] font-mono uppercase tracking-wider text-slate-400 font-semibold">
+                        STAGE {String(layerIdx + 1).padStart(2, '0')}
+                      </div>
+                      <div className="text-xs font-semibold text-slate-200">
                         {layer.layer_type}
-                      </span>
-                      <div className="text-[10px] font-mono text-cyan-400 font-semibold mt-0.5">
-                        [{layer.output_shape.join(', ')}]
+                      </div>
+                      <div className="inline-block font-mono text-[10px] text-blue-400 bg-blue-950/40 border border-blue-900/60 px-1.5 py-0.5 rounded">
+                        ({layer.output_shape.join(', ')})
                       </div>
                     </div>
 
-                    {/* Column of Neurons (Fixed Canonical Height) */}
+                    {/* Column of Neurons (Rack) */}
                     <div
                       style={{ height: `${COLUMN_HEIGHT}px` }}
-                      className={`relative flex flex-col justify-between items-center w-14 rounded-2xl border p-2 transition-all duration-300 ${
+                      className={`relative flex flex-col justify-between items-center w-12 rounded-lg border p-1.5 transition-all duration-200 ${
                         isLayerActiveInSignal
-                          ? 'border-cyan-400 bg-cyan-950/40 shadow-xl shadow-cyan-500/20 scale-[1.03]'
-                          : 'border-white/10 bg-[#070b14]/90 shadow-lg'
+                          ? 'border-blue-500 bg-blue-950/30 ring-1 ring-blue-500/30'
+                          : 'border-slate-800/90 bg-[#090d16]'
                       }`}
                     >
                       {Array.from({ length: displayNeurons }).map((_, neuronIdx) => {
@@ -172,8 +191,8 @@ export const NeuronVisualizerModal: React.FC = () => {
                           hoveredNeuron?.neuronIdx === neuronIdx;
 
                         const isConnectedToHovered =
-                          (hoveredNeuron?.layerIdx === layerIdx - 1) ||
-                          (hoveredNeuron?.layerIdx === layerIdx + 1);
+                          hoveredNeuron?.layerIdx === layerIdx - 1 ||
+                          hoveredNeuron?.layerIdx === layerIdx + 1;
 
                         return (
                           <div
@@ -186,38 +205,38 @@ export const NeuronVisualizerModal: React.FC = () => {
                               })
                             }
                             onMouseLeave={() => setHoveredNeuron(null)}
-                            className={`group relative flex h-5 w-5 cursor-pointer items-center justify-center rounded-full border transition-all duration-200 ${
+                            className={`group relative flex h-4 w-4 cursor-pointer items-center justify-center rounded-full border transition-all duration-150 ${
                               isThisHovered
-                                ? 'scale-150 border-cyan-300 bg-cyan-400 shadow-lg shadow-cyan-400/80 z-20'
+                                ? 'scale-125 border-blue-400 bg-blue-500 z-20 shadow-md shadow-blue-500/30'
                                 : isLayerActiveInSignal
-                                ? 'scale-125 border-emerald-300 bg-emerald-400 shadow-md shadow-emerald-400/60'
+                                ? 'scale-110 border-emerald-400 bg-emerald-500 z-20 shadow-sm shadow-emerald-500/30'
                                 : isConnectedToHovered
-                                ? 'border-indigo-400 bg-indigo-900/80'
-                                : 'border-indigo-400/40 bg-indigo-950/50 hover:scale-125 hover:border-cyan-400 hover:bg-cyan-500'
+                                ? 'border-slate-600 bg-slate-800'
+                                : 'border-slate-700/80 bg-slate-900 hover:border-blue-400 hover:bg-slate-800'
                             }`}
                           >
                             <div
                               className={`h-1.5 w-1.5 rounded-full transition-colors ${
                                 isThisHovered
-                                  ? 'bg-slate-950'
+                                  ? 'bg-white'
                                   : isLayerActiveInSignal
-                                  ? 'bg-emerald-950'
-                                  : 'bg-indigo-300 group-hover:bg-white'
+                                  ? 'bg-slate-950'
+                                  : 'bg-slate-400 group-hover:bg-blue-300'
                               }`}
                             />
 
-                            {/* Floating Tooltip */}
-                            <div className="pointer-events-none absolute left-full ml-2 hidden w-32 rounded-lg border border-white/10 bg-[#090d16] p-2 text-[10px] text-slate-300 shadow-xl group-hover:block z-30">
-                              <div className="font-bold text-white">
-                                Neuron #{neuronIdx + 1}
+                            {/* Floating Telemetry Tooltip */}
+                            <div className="pointer-events-none absolute left-full ml-2 hidden w-36 rounded-md border border-slate-700 bg-slate-950 p-2 text-[10px] text-slate-300 shadow-xl group-hover:block z-30 font-mono">
+                              <div className="font-semibold text-white">
+                                Unit #{neuronIdx + 1}
                               </div>
-                              <div className="text-cyan-400 font-mono mt-0.5">
-                                {layer.layer_type}
+                              <div className="text-slate-400 text-[9px] mt-0.5">
+                                Layer: {layer.layer_type}
                               </div>
-                              <div className="text-[9px] text-slate-400 mt-1">
+                              <div className="text-blue-400 text-[9px] mt-1">
                                 {nextDisplayNeurons > 0
-                                  ? `Connected to ${nextRawDim.toLocaleString()} forward synapses`
-                                  : 'Final output unit'}
+                                  ? `Fan-Out: ${nextRawDim.toLocaleString()} weights`
+                                  : 'Output classification logit'}
                               </div>
                             </div>
                           </div>
@@ -225,21 +244,24 @@ export const NeuronVisualizerModal: React.FC = () => {
                       })}
 
                       {rawDim > displayNeurons && (
-                        <div className="text-[8px] font-mono text-slate-500 font-semibold">
+                        <div className="text-[8px] font-mono text-slate-400 font-medium">
                           +{rawDim - displayNeurons}
                         </div>
                       )}
                     </div>
 
-                    {/* Param Count Footer */}
-                    <div className="mt-3 text-center text-[10px] font-mono text-slate-400">
-                      {layer.param_count > 0
-                        ? `${layer.param_count.toLocaleString()} params`
-                        : '0 params'}
+                    {/* Stage Specs Footer */}
+                    <div className="mt-2.5 text-center space-y-0.5">
+                      <div className="text-[10px] font-mono text-slate-300 font-medium">
+                        {layer.param_count > 0 ? `${layer.param_count.toLocaleString()} params` : '0 params'}
+                      </div>
+                      <div className="text-[9px] font-mono text-slate-400">
+                        {layer.param_count > 0 ? `~${((layer.param_count * 4) / 1024).toFixed(1)} KB` : 'pass-through'}
+                      </div>
                     </div>
                   </div>
 
-                  {/* Synapse Connection Bridge (SVG between Layer i and Layer i+1) */}
+                  {/* Synapse Connection Bridge (Vector Spline) */}
                   {nextLayer && (
                     <div className="relative shrink-0 flex items-center justify-center">
                       <svg
@@ -254,7 +276,6 @@ export const NeuronVisualizerModal: React.FC = () => {
                               : ((srcIdx + 0.5) / displayNeurons) * COLUMN_HEIGHT;
 
                           return Array.from({ length: nextDisplayNeurons }).map((_, tgtIdx) => {
-                            // Sparse mode filtering
                             if (
                               synapseDensity === 'sparse' &&
                               (srcIdx + tgtIdx) % 2 !== 0 &&
@@ -282,9 +303,8 @@ export const NeuronVisualizerModal: React.FC = () => {
                               return null;
                             }
 
-                            // Dynamic Bezier Spline
-                            const d = `M 0 ${y1} C ${SVG_WIDTH * 0.5} ${y1}, ${
-                              SVG_WIDTH * 0.5
+                            const d = `M 0 ${y1} C ${SVG_WIDTH * 0.45} ${y1}, ${
+                              SVG_WIDTH * 0.55
                             } ${y2}, ${SVG_WIDTH} ${y2}`;
 
                             const isSignalActive = animationStep === layerIdx;
@@ -296,35 +316,24 @@ export const NeuronVisualizerModal: React.FC = () => {
                                 fill="none"
                                 stroke={
                                   isHighlighted
-                                    ? '#06b6d4'
+                                    ? '#3b82f6'
                                     : isSignalActive
-                                    ? '#34d399'
-                                    : 'rgba(99, 102, 241, 0.16)'
+                                    ? '#10b981'
+                                    : 'rgba(100, 116, 139, 0.22)'
                                 }
                                 strokeWidth={
-                                  isHighlighted
-                                    ? 2
-                                    : isSignalActive
-                                    ? 1.8
-                                    : 0.8
+                                  isHighlighted ? 1.75 : isSignalActive ? 1.5 : 0.75
                                 }
                                 strokeOpacity={
                                   isHighlighted
                                     ? 1
                                     : isSignalActive
-                                    ? 0.8
+                                    ? 0.9
                                     : synapseDensity === 'hover'
                                     ? 0.1
-                                    : 0.35
+                                    : 0.45
                                 }
-                                strokeDasharray={
-                                  isSignalActive ? '6 3' : undefined
-                                }
-                                className={
-                                  isSignalActive
-                                    ? 'animate-pulse transition-all'
-                                    : undefined
-                                }
+                                strokeDasharray={isSignalActive ? '5 3' : undefined}
                               />
                             );
                           });
@@ -337,25 +346,36 @@ export const NeuronVisualizerModal: React.FC = () => {
             })}
           </div>
 
-          {/* Bottom Explanation Banner */}
-          <div className="mt-4 flex items-center justify-between rounded-xl border border-white/[0.08] bg-[#070b14]/90 p-3.5 text-xs text-slate-300">
-            <div className="flex items-center gap-3">
-              <Sparkles className="h-4 w-4 text-cyan-400 shrink-0" />
-              <span>
-                <strong>Synaptic Connection Visualizer:</strong> Neurons are actively wired across layer
-                boundaries. Hover over any individual neuron to inspect its exact incoming and feedforward
-                synaptic weights.
+          {/* Bottom Telemetry Strip */}
+          <div className="mt-4 flex flex-col sm:flex-row items-center justify-between rounded-lg border border-slate-800 bg-[#090d16] px-4 py-2.5 text-xs text-slate-300 gap-3">
+            <div className="flex items-center gap-2 font-mono text-[11px]">
+              <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                TELEMETRY:
               </span>
+              {hoveredNeuron ? (
+                <span className="text-blue-400">
+                  Unit selected in Stage {hoveredNeuron.layerIdx + 1} ({hoveredNeuron.layerType}) • Index #{hoveredNeuron.neuronIdx + 1}
+                </span>
+              ) : isAnimating ? (
+                <span className="text-emerald-400">
+                  Propagating feedforward tensor activations across Stage {animationStep + 1} of {layerShapes.length}...
+                </span>
+              ) : (
+                <span className="text-slate-400">
+                  Ready. Hover over any unit to isolate localized synapse paths or run feedforward simulation.
+                </span>
+              )}
             </div>
-            <div className="flex items-center gap-4 text-[11px] font-mono text-slate-400">
+
+            <div className="flex items-center gap-4 text-[10px] font-mono text-slate-400 shrink-0">
               <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-cyan-400" /> Hover Active
+                <span className="h-2 w-2 rounded-full bg-slate-600" /> Inactive Synapse
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-emerald-400" /> Forward Pass
+                <span className="h-2 w-2 rounded-full bg-blue-500" /> Isolated Unit
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-indigo-500/60" /> Latent Synapse
+                <span className="h-2 w-2 rounded-full bg-emerald-500" /> Active Wavefront
               </span>
             </div>
           </div>
