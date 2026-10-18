@@ -35,6 +35,7 @@ coverage.xml
 *.py,cover
 .hypothesis/
 htmlcov/
+scratch/
 
 # Node & Frontend
 node_modules/

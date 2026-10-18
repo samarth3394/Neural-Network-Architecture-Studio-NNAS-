@@ -138,11 +138,14 @@ class JobQueueManager:
             db.commit()
 
             # Prepare Dataset
+            schema_info = json.loads(dataset_db.schema_json) if dataset_db.schema_json else {}
             data = DatasetManager.get_dataset(
                 dataset_name=dataset_db.dataset_type,
                 batch_size=batch_size,
                 random_seed=int(config.get("random_seed", 42)),
                 csv_path=dataset_db.file_path,
+                image_size=schema_info.get("image_size"),
+                color_mode=schema_info.get("color_mode"),
             )
 
             is_classification = dataset_db.num_classes > 1 and graph.task == "classification"

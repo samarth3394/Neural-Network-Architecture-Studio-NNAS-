@@ -207,6 +207,35 @@ class ApiClient {
     return res.json();
   }
 
+  async uploadImageZipDataset(
+    workspaceId: string,
+    name: string,
+    file: File,
+    colorMode: 'grayscale' | 'rgb' = 'grayscale',
+    imageSize: number = 28
+  ): Promise<DatasetRecord> {
+    const formData = new FormData();
+    formData.append('workspace_id', workspaceId);
+    formData.append('name', name);
+    formData.append('color_mode', colorMode);
+    formData.append('image_size', String(imageSize));
+    formData.append('file', file);
+
+    const headers: Record<string, string> = {};
+    if (this.token) headers['Authorization'] = `Bearer ${this.token}`;
+
+    const res = await fetch(`${API_BASE}/datasets/upload-zip`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || 'Upload failed');
+    }
+    return res.json();
+  }
+
   // Training
   async submitTrainingJob(config: {
     project_id: string;

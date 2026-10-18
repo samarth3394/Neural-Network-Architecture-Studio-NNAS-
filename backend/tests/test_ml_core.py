@@ -188,3 +188,37 @@ def test_inference_engine(sample_dense_graph, tmp_path):
     bench = engine.benchmark(num_requests=10)
     assert bench["p50_latency_ms"] >= 0.0
     assert bench["throughput_req_per_sec"] > 0.0
+
+
+def test_custom_image_zip_dataset(tmp_path):
+    import io
+    import zipfile
+    from PIL import Image
+
+    zip_path = str(tmp_path / "test_medical_images.zip")
+    with zipfile.ZipFile(zip_path, "w") as zf:
+        # Create 4 sample images in normal and pneumonia folders
+        for i in range(4):
+            img = Image.new("L", (32, 32), color=i * 50)
+            buf = io.BytesIO()
+            img.save(buf, format="PNG")
+            zf.writestr(f"dataset/class_normal/norm_{i}.png", buf.getvalue())
+
+        for i in range(4):
+            img = Image.new("L", (32, 32), color=200 - i * 30)
+            buf = io.BytesIO()
+            img.save(buf, format="PNG")
+            zf.writestr(f"dataset/class_pneumonia/pneu_{i}.png", buf.getvalue())
+
+    ds = DatasetManager.get_dataset(
+        "custom_image_zip",
+        csv_path=zip_path,
+        batch_size=2,
+        image_size=28,
+        color_mode="grayscale",
+    )
+    assert ds["metadata"]["num_classes"] == 2
+    assert "class_normal" in ds["metadata"]["classes"]
+    assert "class_pneumonia" in ds["metadata"]["classes"]
+    assert ds["metadata"]["input_shape"] == [1, 28, 28]
+    assert len(ds["train_loader"]) > 0

@@ -29,6 +29,8 @@ class DatasetManager:
         random_seed: int = 42,
         csv_path: Optional[str] = None,
         target_column: Optional[str] = None,
+        image_size: Optional[int] = None,
+        color_mode: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Loads and prepares train, val, and test data loaders.
@@ -58,6 +60,17 @@ class DatasetManager:
             if not csv_path or not os.path.exists(csv_path):
                 raise ValueError(f"Custom CSV path '{csv_path}' does not exist.")
             x_data, y_data, metadata = cls._load_custom_csv(csv_path, target_column)
+        elif dataset_name.lower() in ("custom_image_zip", "image_zip", "zip"):
+            target_path = csv_path
+            if not target_path or not os.path.exists(target_path):
+                raise ValueError(f"Custom Image ZIP path '{target_path}' does not exist.")
+            img_sz = image_size if (image_size and image_size > 0) else 28
+            col_md = color_mode if color_mode in ("grayscale", "rgb") else "grayscale"
+            x_data, y_data, metadata = cls._load_image_zip(
+                target_path,
+                target_size=(img_sz, img_sz),
+                color_mode=col_md,
+            )
         else:
             raise ValueError(f"Unsupported dataset: {dataset_name}")
 
@@ -405,5 +418,95 @@ class DatasetManager:
             "classes": classes,
             "feature_names": list(x_df.columns),
             "class_distribution": class_dist,
+        }
+        return x_array, y_array, metadata
+
+    @classmethod
+    def _load_image_zip(
+        cls,
+        file_path: str,
+        target_size: Tuple[int, int] = (28, 28),
+        color_mode: str = "grayscale",
+    ) -> Tuple[np.ndarray, np.ndarray, Dict[str, Any]]:
+        import io
+        import zipfile
+        from PIL import Image
+
+        if not os.path.exists(file_path):
+            raise ValueError(f"Image ZIP file '{file_path}' does not exist.")
+
+        valid_exts = {".jpg", ".jpeg", ".png", ".bmp", ".webp", ".tiff"}
+        x_list = []
+        raw_labels = []
+
+        with zipfile.ZipFile(file_path, "r") as z:
+            # Filter entries ignoring hidden Mac/Linux archive artifacts
+            entries = [
+                e for e in z.namelist()
+                if not e.startswith("__MACOSX")
+                and not os.path.basename(e).startswith(".")
+                and os.path.splitext(e.lower())[1] in valid_exts
+            ]
+
+            if not entries:
+                raise ValueError(
+                    "No valid image files (.jpg, .jpeg, .png, .bmp, .webp) found inside the ZIP archive."
+                )
+
+            for entry in entries:
+                # Infer class label from parent folder name
+                # e.g., 'pneumonia/person1_virus_11.jpeg' -> 'pneumonia'
+                # or 'chest_xray/train/normal/IM-0115-0001.jpeg' -> 'normal'
+                parts = [p for p in entry.replace("\\", "/").split("/") if p]
+                if len(parts) > 1:
+                    label = parts[-2]
+                else:
+                    label = "class_0"
+
+                try:
+                    img_bytes = z.read(entry)
+                    with Image.open(io.BytesIO(img_bytes)) as img:
+                        if color_mode == "rgb":
+                            img = img.convert("RGB")
+                        else:
+                            img = img.convert("L")
+
+                        img = img.resize(target_size, Image.Resampling.BILINEAR)
+                        arr = np.array(img, dtype=np.float32) / 255.0
+
+                        if color_mode == "rgb":
+                            # Shape (H, W, 3) -> (3, H, W)
+                            arr = np.transpose(arr, (2, 0, 1))
+                        else:
+                            # Shape (H, W) -> (1, H, W)
+                            arr = np.expand_dims(arr, axis=0)
+
+                        x_list.append(arr)
+                        raw_labels.append(label)
+                except Exception:
+                    # Skip corrupt image entries
+                    continue
+
+        if not x_list:
+            raise ValueError("Failed to decode any valid images from the ZIP archive.")
+
+        class_names = sorted(list(set(raw_labels)))
+        label_map = {name: idx for idx, name in enumerate(class_names)}
+        y_array = np.array([label_map[c] for c in raw_labels], dtype=np.int64)
+        x_array = np.array(x_list, dtype=np.float32)
+
+        input_shape = list(x_array.shape[1:])  # e.g. [1, 28, 28] or [3, 64, 64]
+        class_dist = {int(k): int(v) for k, v in zip(*np.unique(y_array, return_counts=True))}
+
+        metadata = {
+            "name": os.path.basename(file_path),
+            "task": "classification",
+            "input_shape": input_shape,
+            "num_classes": len(class_names),
+            "classes": class_names,
+            "class_distribution": class_dist,
+            "total_images": len(x_array),
+            "color_mode": color_mode,
+            "image_size": target_size[0],
         }
         return x_array, y_array, metadata

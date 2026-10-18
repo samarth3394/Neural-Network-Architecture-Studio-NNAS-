@@ -139,3 +139,70 @@ async def upload_csv_dataset(
         "schema_info": meta,
         "created_at": db_ds.created_at.isoformat(),
     }
+
+
+@router.post("/upload-zip", response_model=DatasetResponse)
+async def upload_image_zip_dataset(
+    workspace_id: str = Form(...),
+    name: str = Form(...),
+    color_mode: str = Form("grayscale"),
+    image_size: int = Form(28),
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    ws = db.query(Workspace).filter(Workspace.id == workspace_id).first()
+    if not ws:
+        raise HTTPException(status_code=404, detail="Workspace not found")
+
+    MAX_FILE_SIZE = 1024 * 1024 * 1024  # 1GB (1024MB) limit
+    content = await file.read()
+    if len(content) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail="File size exceeds maximum 1GB limit.")
+
+    checksum = ArtifactStorage.compute_checksum(content)
+    file_subpath = f"datasets/{workspace_id}/{checksum}_{file.filename}"
+    saved_path = ArtifactStorage.save_file(file_subpath, content)
+
+    try:
+        data = DatasetManager.get_dataset(
+            dataset_name="custom_image_zip",
+            csv_path=saved_path,
+            image_size=image_size,
+            color_mode=color_mode,
+        )
+    except Exception as ex:
+        ArtifactStorage.delete_file(saved_path)
+        raise HTTPException(status_code=400, detail=f"Failed to process image ZIP dataset: {str(ex)}")
+
+    meta = data["metadata"]
+    input_shape = meta.get("input_shape", [1, 28, 28])
+    db_ds = DatasetModel(
+        workspace_id=workspace_id,
+        name=name,
+        dataset_type="custom_image_zip",
+        file_path=saved_path,
+        fingerprint=checksum,
+        num_samples=meta.get("total_samples", 0),
+        input_shape_json=json.dumps(input_shape),
+        num_classes=meta.get("num_classes", 2),
+        schema_json=json.dumps(meta),
+    )
+    db.add(db_ds)
+    db.commit()
+    db.refresh(db_ds)
+
+    record_audit(db, "UPLOAD_IMAGE_ZIP_DATASET", "dataset", db_ds.id, current_user.id, workspace_id)
+
+    return {
+        "id": db_ds.id,
+        "workspace_id": db_ds.workspace_id,
+        "name": db_ds.name,
+        "dataset_type": db_ds.dataset_type,
+        "num_samples": db_ds.num_samples,
+        "input_shape": input_shape,
+        "num_classes": db_ds.num_classes,
+        "fingerprint": db_ds.fingerprint,
+        "schema_info": meta,
+        "created_at": db_ds.created_at.isoformat(),
+    }

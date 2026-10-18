@@ -77,11 +77,19 @@ export const useStudioStore = create<StudioState>((set, get) => ({
   },
 
   updateGraphMetadata: (name, task, inputShape) => {
+    const prev = get().graph;
+    const updatedNodes = prev.nodes.map((node) => {
+      if (node.type === 'Input') {
+        return { ...node, parameters: { ...node.parameters, shape: inputShape } };
+      }
+      return node;
+    });
     const updated = {
-      ...get().graph,
+      ...prev,
       name,
       task,
       input_shape: inputShape,
+      nodes: updatedNodes,
     };
     set({ graph: updated, isDirty: true });
     get().validateGraph();

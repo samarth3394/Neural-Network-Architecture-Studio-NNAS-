@@ -61,10 +61,13 @@ def _run_optimization_background(job_id: str):
         base_graph = ArchitectureGraph(**json.loads(arch_db.graph_json))
         config = json.loads(job.config_json)
 
+        schema_info = json.loads(dataset_db.schema_json) if dataset_db.schema_json else {}
         data = DatasetManager.get_dataset(
             dataset_name=dataset_db.dataset_type,
             batch_size=32,
             csv_path=dataset_db.file_path,
+            image_size=schema_info.get("image_size"),
+            color_mode=schema_info.get("color_mode"),
         )
 
         ckpt_dir = os.path.join(settings.LOCAL_STORAGE_DIR, "nas", job.id)
