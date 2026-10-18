@@ -13,6 +13,7 @@ import {
   ArrowRight,
   Eye,
   Rocket,
+  AlertTriangle,
 } from 'lucide-react';
 import {
   LineChart,
@@ -188,6 +189,37 @@ export const TrainingPage: React.FC = () => {
                   </option>
                 ))}
               </select>
+
+              {/* Shape Mismatch Warning */}
+              {(() => {
+                const sArch = architectures.find((a) => a.id === selectedArchId);
+                const sData = datasets.find((d) => d.id === selectedDatasetId);
+                const mismatch =
+                  sArch &&
+                  sData &&
+                  sArch.input_shape &&
+                  sData.input_shape &&
+                  JSON.stringify(sArch.input_shape) !== JSON.stringify(sData.input_shape);
+
+                if (!mismatch) return null;
+
+                return (
+                  <div className="mt-2 rounded-xl border border-amber-500/40 bg-amber-950/40 p-2.5 text-xs text-amber-200">
+                    <div className="font-semibold flex items-center gap-1.5 text-amber-300">
+                      <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                      <span>Input Shape Incompatibility:</span>
+                    </div>
+                    <div className="mt-1 text-[11px] text-slate-300">
+                      Architecture expects: <strong className="text-cyan-300 font-mono">[{sArch.input_shape.join(', ')}]</strong>
+                      <br />
+                      Dataset provides: <strong className="text-amber-300 font-mono">[{sData.input_shape.join(', ')}]</strong>
+                    </div>
+                    <div className="mt-1.5 text-[10px] text-amber-300/90 leading-tight">
+                      Pairing a 2D ConvNet with 1D Tabular data will fail. Please select a matching dataset or architecture.
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
 
             <div className="grid grid-cols-2 gap-2">
@@ -295,9 +327,11 @@ export const TrainingPage: React.FC = () => {
                     <span
                       className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase ${
                         activeJob.status === 'SUCCEEDED'
-                          ? 'bg-emerald-500/20 text-emerald-400'
+                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                           : activeJob.status === 'RUNNING'
-                          ? 'bg-blue-500/20 text-accent-blue animate-pulse'
+                          ? 'bg-blue-500/20 text-accent-blue border border-blue-500/30 animate-pulse'
+                          : activeJob.status === 'FAILED'
+                          ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
                           : 'bg-studio-800 text-slate-300'
                       }`}
                     >
@@ -315,6 +349,24 @@ export const TrainingPage: React.FC = () => {
                       </>
                     )}
                   </div>
+
+                  {/* Failure Diagnostics if Job Failed */}
+                  {activeJob.status === 'FAILED' && (
+                    <div className="mt-3 rounded-xl border border-rose-500/40 bg-rose-950/40 p-3.5 text-xs text-rose-200">
+                      <div className="font-bold flex items-center gap-1.5 text-rose-300">
+                        <AlertTriangle className="h-4 w-4 text-rose-400 shrink-0" />
+                        <span>Training Failure Diagnosis:</span>
+                      </div>
+                      <div className="mt-1.5 font-mono text-[11px] text-rose-200 bg-black/40 p-2 rounded border border-rose-500/20 break-words">
+                        {activeJob.error_message || 'PyTorch execution halted: Tensor shape mismatch between architecture and dataset.'}
+                      </div>
+                      {activeJob.error_message?.toLowerCase().includes('conv2d') && (
+                        <div className="mt-2 text-[11px] text-amber-300 bg-amber-950/30 p-2 rounded border border-amber-500/20 leading-relaxed">
+                          💡 <strong>How to Fix:</strong> The architecture has a <code>Conv2d</code> layer (which expects 2D/3D images like MNIST <code>[1, 28, 28]</code>), but the selected dataset is 1D tabular. To train on this dataset, choose a <strong>Linear / Dense MLP</strong> architecture, or select <strong>MNIST</strong> for image Conv2d!
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Job Controls */}
