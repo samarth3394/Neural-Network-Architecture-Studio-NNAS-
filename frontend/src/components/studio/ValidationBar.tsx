@@ -7,6 +7,8 @@ import {
   Wand2,
   Cpu,
   Layers,
+  Trash2,
+  LayoutTemplate,
 } from 'lucide-react';
 import { useStudioStore } from '../../store/studioStore';
 
@@ -15,6 +17,7 @@ export const ValidationBar: React.FC = () => {
   const fetchPyTorchCode = useStudioStore((s) => s.fetchPyTorchCode);
   const setNeuronModalOpen = useStudioStore((s) => s.setNeuronModalOpen);
   const autoLayout = useStudioStore((s) => s.autoLayout);
+  const resetGraph = useStudioStore((s) => s.resetGraph);
 
   const isValid = validationResult?.is_valid ?? true;
   const totalParams = validationResult?.total_parameters ?? 0;
@@ -58,6 +61,30 @@ export const ValidationBar: React.FC = () => {
 
         {/* Right: Quick Studio Action Buttons */}
         <div className="flex items-center gap-2">
+          {/* Templates & Clear Dropdown */}
+          <div className="flex items-center gap-1.5 border-r border-studio-700/60 pr-2">
+            <LayoutTemplate className="h-3.5 w-3.5 text-slate-400" />
+            <select
+              onChange={(e) => resetGraph(e.target.value as any)}
+              defaultValue="convnet"
+              className="rounded-lg border border-studio-700 bg-studio-850 px-2 py-1.5 text-xs text-slate-300 focus:border-accent-blue focus:outline-none"
+              title="Load Architecture Template or Start Fresh"
+            >
+              <option value="convnet">Template: Vision ConvNet</option>
+              <option value="mlp">Template: Dense MLP</option>
+              <option value="tabular">Template: Tabular Classifier</option>
+              <option value="blank">📄 Blank Canvas (Start Empty)</option>
+            </select>
+            <button
+              onClick={() => resetGraph('blank')}
+              className="flex items-center gap-1 rounded-lg border border-rose-500/30 bg-rose-500/10 px-2 py-1.5 text-xs font-medium text-rose-300 hover:bg-rose-500/20 transition-colors"
+              title="Clear Canvas to Blank Architecture"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              Clear
+            </button>
+          </div>
+
           <button
             onClick={autoLayout}
             className="flex items-center gap-1.5 rounded-lg border border-studio-700 bg-studio-850 px-2.5 py-1.5 text-xs font-medium text-slate-200 transition-colors hover:bg-studio-800 hover:text-white"

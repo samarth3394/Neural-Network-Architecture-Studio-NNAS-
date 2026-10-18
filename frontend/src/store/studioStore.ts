@@ -29,6 +29,7 @@ interface StudioState {
   undo: () => void;
   redo: () => void;
   autoLayout: () => void;
+  resetGraph: (template?: 'blank' | 'convnet' | 'mlp' | 'tabular') => void;
 }
 
 const defaultInitialGraph: ArchitectureGraph = {
@@ -213,5 +214,76 @@ export const useStudioStore = create<StudioState>((set, get) => ({
       position: { x: 60 + idx * xSpacing, y: yCenter },
     }));
     set({ graph: { ...graph, nodes: newNodes }, isDirty: true });
+  },
+
+  resetGraph: (template = 'blank') => {
+    let newGraph: ArchitectureGraph;
+    if (template === 'blank') {
+      newGraph = {
+        name: 'New Custom Architecture',
+        version: '1.0.0',
+        task: 'classification',
+        framework: 'pytorch',
+        input_shape: [1, 28, 28],
+        num_classes: 10,
+        nodes: [
+          { id: 'in', type: 'Input', parameters: { shape: [1, 28, 28] }, position: { x: 80, y: 180 } },
+        ],
+        edges: [],
+      };
+    } else if (template === 'mlp') {
+      newGraph = {
+        name: 'Multi-Layer Perceptron (MLP)',
+        version: '1.0.0',
+        task: 'classification',
+        framework: 'pytorch',
+        input_shape: [1, 28, 28],
+        num_classes: 10,
+        nodes: [
+          { id: 'in', type: 'Input', parameters: { shape: [1, 28, 28] }, position: { x: 80, y: 180 } },
+          { id: 'fl', type: 'Flatten', parameters: { start_dim: 1 }, position: { x: 260, y: 180 } },
+          { id: 'fc1', type: 'Linear', parameters: { out_features: 128 }, position: { x: 440, y: 180 } },
+          { id: 'r1', type: 'ReLU', parameters: {}, position: { x: 620, y: 180 } },
+          { id: 'fc2', type: 'Linear', parameters: { out_features: 10 }, position: { x: 800, y: 180 } },
+        ],
+        edges: [
+          { id: 'e1', source: 'in', target: 'fl' },
+          { id: 'e2', source: 'fl', target: 'fc1' },
+          { id: 'e3', source: 'fc1', target: 'r1' },
+          { id: 'e4', source: 'r1', target: 'fc2' },
+        ],
+      };
+    } else if (template === 'tabular') {
+      newGraph = {
+        name: 'Tabular Dense Classifier',
+        version: '1.0.0',
+        task: 'classification',
+        framework: 'pytorch',
+        input_shape: [30],
+        num_classes: 2,
+        nodes: [
+          { id: 'in', type: 'Input', parameters: { shape: [30] }, position: { x: 80, y: 180 } },
+          { id: 'fc1', type: 'Linear', parameters: { out_features: 64 }, position: { x: 280, y: 180 } },
+          { id: 'r1', type: 'ReLU', parameters: {}, position: { x: 460, y: 180 } },
+          { id: 'fc2', type: 'Linear', parameters: { out_features: 2 }, position: { x: 640, y: 180 } },
+        ],
+        edges: [
+          { id: 'e1', source: 'in', target: 'fc1' },
+          { id: 'e2', source: 'fc1', target: 'r1' },
+          { id: 'e3', source: 'r1', target: 'fc2' },
+        ],
+      };
+    } else {
+      newGraph = defaultInitialGraph;
+    }
+
+    set({
+      graph: newGraph,
+      selectedNodeId: null,
+      isDirty: true,
+      history: [newGraph],
+      historyIndex: 0,
+    });
+    get().validateGraph();
   },
 }));
