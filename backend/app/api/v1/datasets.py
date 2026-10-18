@@ -89,9 +89,10 @@ async def upload_csv_dataset(
     if not ws:
         raise HTTPException(status_code=404, detail="Workspace not found")
 
+    MAX_FILE_SIZE = 1024 * 1024 * 1024  # 1GB (1024MB) limit
     content = await file.read()
-    if len(content) > 50 * 1024 * 1024:  # 50MB limit
-        raise HTTPException(status_code=400, detail="File size exceeds maximum 50MB limit.")
+    if len(content) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail="File size exceeds maximum 1GB (1024MB) limit.")
 
     checksum = ArtifactStorage.compute_checksum(content)
     file_subpath = f"datasets/{workspace_id}/{checksum}_{file.filename}"

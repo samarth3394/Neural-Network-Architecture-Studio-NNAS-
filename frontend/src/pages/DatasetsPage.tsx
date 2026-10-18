@@ -241,7 +241,7 @@ export const DatasetsPage: React.FC = () => {
             className="w-full max-w-md rounded-2xl border border-studio-700 bg-studio-900 p-6 shadow-2xl"
           >
             <h3 className="text-base font-bold text-white">Upload Tabular CSV Dataset</h3>
-            <p className="text-xs text-slate-400 mt-1">Automatic schema inspection, missing-value imputation, and normalization</p>
+            <p className="text-xs text-slate-400 mt-1">Automatic schema inspection, missing-value imputation, and normalization (Supports datasets up to 1GB)</p>
 
             <div className="mt-4 space-y-3">
               <div>

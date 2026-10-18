@@ -30,7 +30,7 @@ Neural Network Architecture Studio (NNAS) is evaluated against standard threat m
 - Paths containing `..` or absolute paths outside `LOCAL_STORAGE_DIR` are rejected with security errors.
 
 #### 3.3 Strict Upload Validations
-- File size enforced prior to memory loading (50MB threshold).
+- File size enforced prior to memory loading (1GB threshold).
 - Content validated against CSV parsing and shape verification before database commit.
 - Files failing integrity checks are immediately unlinked from storage.
 
