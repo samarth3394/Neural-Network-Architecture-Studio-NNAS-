@@ -3,6 +3,9 @@ import { WorkspaceRecord, ProjectRecord, UserRecord } from '../types';
 import { api } from '../api/client';
 
 export type AppTab =
+  | 'landing'
+  | 'login'
+  | 'signup'
   | 'dashboard'
   | 'projects'
   | 'studio'
@@ -25,6 +28,7 @@ interface AppState {
   currentWorkspace: WorkspaceRecord | null;
   currentProject: ProjectRecord | null;
   currentUser: UserRecord | null;
+  isAuthenticated: boolean;
   isLoading: boolean;
 
   setActiveTab: (tab: AppTab) => void;
@@ -32,15 +36,19 @@ interface AppState {
   setCurrentProject: (proj: ProjectRecord) => void;
   initApp: () => Promise<void>;
   refreshProjects: () => Promise<void>;
+  loginUser: (formData: FormData) => Promise<void>;
+  registerUser: (data: { email: string; password: string; full_name: string; role?: string }) => Promise<void>;
+  logoutUser: () => void;
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
-  activeTab: 'studio', // Architecture Studio is the main product experience
+  activeTab: 'landing', // Modern default: start on premium Landing Page, seamlessly jump into Studio
   workspaces: [],
   projects: [],
   currentWorkspace: null,
   currentProject: null,
   currentUser: null,
+  isAuthenticated: false,
   isLoading: true,
 
   setActiveTab: (tab) => set({ activeTab: tab }),
@@ -52,15 +60,36 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   setCurrentProject: (proj) => set({ currentProject: proj }),
 
+  loginUser: async (formData: FormData) => {
+    const data = await api.login(formData);
+    set({ currentUser: data.user, isAuthenticated: true, activeTab: 'studio' });
+    await get().initApp();
+  },
+
+  registerUser: async (regData) => {
+    const data = await api.register(regData);
+    set({ currentUser: data.user, isAuthenticated: true, activeTab: 'studio' });
+    await get().initApp();
+  },
+
+  logoutUser: () => {
+    api.logout();
+    set({
+      currentUser: null,
+      isAuthenticated: false,
+      activeTab: 'landing',
+    });
+  },
+
   initApp: async () => {
     set({ isLoading: true });
     try {
-      // Fetch user profile
+      // Fetch user profile if token exists
       try {
         const user = await api.getCurrentUser();
-        set({ currentUser: user });
+        set({ currentUser: user, isAuthenticated: true });
       } catch {
-        // Fallback default admin
+        // No active remote session; if user visited directly, allow explore mode
         set({
           currentUser: {
             id: 'admin-seed',
@@ -69,6 +98,7 @@ export const useAppStore = create<AppState>((set, get) => ({
             role: 'admin',
             is_active: true,
           },
+          isAuthenticated: !!api.getToken(),
         });
       }
 

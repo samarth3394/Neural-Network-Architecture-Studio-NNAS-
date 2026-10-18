@@ -14,6 +14,7 @@ import {
   Settings,
   Users,
   ShieldCheck,
+  Globe,
 } from 'lucide-react';
 import { useAppStore, AppTab } from '../../store/appStore';
 
@@ -50,7 +51,18 @@ export const Sidebar: React.FC = () => {
   const setActiveTab = useAppStore((s) => s.setActiveTab);
 
   return (
-    <aside className="flex h-full w-56 flex-col border-r border-studio-800 bg-studio-950 p-3 select-none">
+    <aside className="flex h-full w-56 flex-col border-r border-white/[0.06] bg-[#090d16]/95 p-3 select-none backdrop-blur-xl">
+      <button
+        onClick={() => setActiveTab('landing')}
+        className="mb-3 flex w-full items-center justify-between rounded-xl border border-white/5 bg-white/[0.02] px-3 py-2 text-xs font-medium text-slate-400 hover:border-indigo-500/30 hover:bg-indigo-950/20 hover:text-white transition-all"
+      >
+        <span className="flex items-center gap-2">
+          <Globe className="h-3.5 w-3.5 text-cyan-400" />
+          Platform Portal
+        </span>
+        <span className="text-[10px] text-slate-500 font-mono">v1.0</span>
+      </button>
+
       <div className="flex-1 space-y-5 overflow-y-auto pr-1">
         {/* Core Category */}
         <div>
@@ -65,13 +77,13 @@ export const Sidebar: React.FC = () => {
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-all ${
+                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs transition-all ${
                     isActive
-                      ? 'bg-accent-blue/15 text-accent-blue shadow-sm'
-                      : 'text-slate-400 hover:bg-studio-900 hover:text-slate-200'
+                      ? 'bg-gradient-to-r from-indigo-500/20 to-cyan-500/10 text-cyan-300 border border-indigo-500/30 shadow-sm font-semibold'
+                      : 'text-slate-400 hover:bg-white/[0.04] hover:text-slate-200 font-medium'
                   }`}
                 >
-                  <Icon className={`h-4 w-4 ${isActive ? 'text-accent-blue' : 'text-slate-400'}`} />
+                  <Icon className={`h-4 w-4 ${isActive ? 'text-cyan-400' : 'text-slate-400'}`} />
                   {item.label}
                 </button>
               );
@@ -92,13 +104,13 @@ export const Sidebar: React.FC = () => {
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-all ${
+                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs transition-all ${
                     isActive
-                      ? 'bg-accent-blue/15 text-accent-blue shadow-sm'
-                      : 'text-slate-400 hover:bg-studio-900 hover:text-slate-200'
+                      ? 'bg-gradient-to-r from-indigo-500/20 to-cyan-500/10 text-cyan-300 border border-indigo-500/30 shadow-sm font-semibold'
+                      : 'text-slate-400 hover:bg-white/[0.04] hover:text-slate-200 font-medium'
                   }`}
                 >
-                  <Icon className={`h-4 w-4 ${isActive ? 'text-accent-blue' : 'text-slate-400'}`} />
+                  <Icon className={`h-4 w-4 ${isActive ? 'text-cyan-400' : 'text-slate-400'}`} />
                   {item.label}
                 </button>
               );
@@ -119,13 +131,13 @@ export const Sidebar: React.FC = () => {
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-all ${
+                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs transition-all ${
                     isActive
-                      ? 'bg-accent-blue/15 text-accent-blue shadow-sm'
-                      : 'text-slate-400 hover:bg-studio-900 hover:text-slate-200'
+                      ? 'bg-gradient-to-r from-indigo-500/20 to-cyan-500/10 text-cyan-300 border border-indigo-500/30 shadow-sm font-semibold'
+                      : 'text-slate-400 hover:bg-white/[0.04] hover:text-slate-200 font-medium'
                   }`}
                 >
-                  <Icon className={`h-4 w-4 ${isActive ? 'text-accent-blue' : 'text-slate-400'}`} />
+                  <Icon className={`h-4 w-4 ${isActive ? 'text-cyan-400' : 'text-slate-400'}`} />
                   {item.label}
                 </button>
               );
@@ -146,13 +158,13 @@ export const Sidebar: React.FC = () => {
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-all ${
+                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs transition-all ${
                     isActive
-                      ? 'bg-accent-blue/15 text-accent-blue shadow-sm'
-                      : 'text-slate-400 hover:bg-studio-900 hover:text-slate-200'
+                      ? 'bg-gradient-to-r from-indigo-500/20 to-cyan-500/10 text-cyan-300 border border-indigo-500/30 shadow-sm font-semibold'
+                      : 'text-slate-400 hover:bg-white/[0.04] hover:text-slate-200 font-medium'
                   }`}
                 >
-                  <Icon className={`h-4 w-4 ${isActive ? 'text-accent-blue' : 'text-slate-400'}`} />
+                  <Icon className={`h-4 w-4 ${isActive ? 'text-cyan-400' : 'text-slate-400'}`} />
                   {item.label}
                 </button>
               );

@@ -17,15 +17,30 @@ import { MonitoringPage } from './pages/MonitoringPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { UsersPage } from './pages/UsersPage';
 import { AuditPage } from './pages/AuditPage';
+import { LandingPage } from './pages/LandingPage';
+import { LoginPage } from './pages/LoginPage';
+import { SignupPage } from './pages/SignupPage';
 
 export const App: React.FC = () => {
   const activeTab = useAppStore((s) => s.activeTab);
   const initApp = useAppStore((s) => s.initApp);
-  const isLoading = useAppStore((s) => s.isLoading);
 
   useEffect(() => {
     initApp();
   }, [initApp]);
+
+  // Full-screen standalone views
+  if (activeTab === 'landing') {
+    return <LandingPage />;
+  }
+
+  if (activeTab === 'login') {
+    return <LoginPage />;
+  }
+
+  if (activeTab === 'signup') {
+    return <SignupPage />;
+  }
 
   const renderActivePage = () => {
     switch (activeTab) {
@@ -63,7 +78,7 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen w-screen flex-col overflow-hidden bg-studio-950 font-sans text-slate-100">
+    <div className="flex h-screen w-screen flex-col overflow-hidden bg-[#07090e] font-sans text-slate-100">
       <Navbar />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />

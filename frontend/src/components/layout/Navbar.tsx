@@ -8,6 +8,8 @@ import {
   Building2,
   User as UserIcon,
   Check,
+  LogOut,
+  Home,
 } from 'lucide-react';
 import { useAppStore } from '../../store/appStore';
 import { useStudioStore } from '../../store/studioStore';
@@ -54,23 +56,32 @@ export const Navbar: React.FC = () => {
     }
   };
 
+  const setActiveTab = useAppStore((s) => s.setActiveTab);
+  const logoutUser = useAppStore((s) => s.logoutUser);
+
   return (
-    <header className="flex h-14 items-center justify-between border-b border-studio-800 bg-studio-950 px-4">
+    <header className="flex h-14 items-center justify-between border-b border-white/[0.08] bg-[#090d16]/90 px-4 backdrop-blur-xl">
       {/* Brand & Project Info */}
       <div className="flex items-center gap-6">
-        <div className="flex items-center gap-2.5">
-          <div className="rounded-lg bg-accent-blue/15 p-1.5 text-accent-blue">
-            <BrainCircuit className="h-5 w-5" />
+        <button
+          onClick={() => setActiveTab('landing')}
+          className="group flex items-center gap-2.5 transition-transform hover:scale-[1.02]"
+          title="Back to Landing Page"
+        >
+          <div className="relative flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-500 p-[1px] shadow-md shadow-indigo-500/25">
+            <div className="flex h-full w-full items-center justify-center rounded-[11px] bg-[#0b0f17]">
+              <BrainCircuit className="h-4.5 w-4.5 text-cyan-400 group-hover:rotate-12 transition-transform" />
+            </div>
           </div>
           <div>
             <div className="text-sm font-bold tracking-tight text-white flex items-center gap-2">
               NNAS
-              <span className="rounded bg-accent-blue/10 px-1.5 py-0.2 text-[10px] font-mono text-accent-blue border border-accent-blue/20">
-                Studio v1.0
+              <span className="rounded-full bg-indigo-500/10 px-2 py-0.5 text-[10px] font-mono text-indigo-300 border border-indigo-500/20">
+                v1.0 Core
               </span>
             </div>
           </div>
-        </div>
+        </button>
 
         {/* Workspace & Project Selectors */}
         <div className="hidden md:flex items-center gap-3 border-l border-studio-800 pl-4 text-xs">
@@ -163,19 +174,33 @@ export const Navbar: React.FC = () => {
           )}
         </button>
 
-        {/* User Role Badge */}
-        <div className="ml-2 flex items-center gap-2 border-l border-studio-800 pl-3">
-          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-studio-800 text-slate-300">
-            <UserIcon className="h-4 w-4" />
+        {/* User Role Badge & Logout */}
+        <div className="ml-2 flex items-center gap-2 border-l border-white/10 pl-3">
+          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-tr from-indigo-500/20 to-cyan-500/20 text-indigo-300 border border-white/10">
+            <UserIcon className="h-3.5 w-3.5" />
           </div>
           <div className="hidden xl:block text-left">
             <div className="text-[11px] font-medium text-slate-200 leading-tight">
-              {currentUser?.full_name || 'ML Architect'}
+              {currentUser?.full_name || 'Lead Architect'}
             </div>
-            <div className="text-[9px] font-mono text-accent-cyan uppercase">
+            <div className="text-[9px] font-mono text-cyan-400 uppercase">
               {currentUser?.role || 'admin'}
             </div>
           </div>
+          <button
+            onClick={() => setActiveTab('landing')}
+            className="rounded p-1 text-slate-400 hover:bg-white/5 hover:text-white transition-colors"
+            title="Landing Page"
+          >
+            <Home className="h-3.5 w-3.5" />
+          </button>
+          <button
+            onClick={logoutUser}
+            className="rounded p-1 text-slate-400 hover:bg-rose-500/20 hover:text-rose-300 transition-colors"
+            title="Sign Out"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+          </button>
         </div>
       </div>
     </header>

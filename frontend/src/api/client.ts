@@ -70,10 +70,40 @@ class ApiClient {
       method: 'POST',
       body: formData,
     });
-    if (!res.ok) throw new Error('Invalid email or password');
+    if (!res.ok) {
+      let detail = 'Invalid email or password';
+      try {
+        const err = await res.json();
+        detail = err.detail || detail;
+      } catch {}
+      throw new Error(detail);
+    }
     const data = await res.json();
     this.setToken(data.access_token);
     return data;
+  }
+
+  async register(data: { email: string; password: string; full_name: string; role?: string }) {
+    const res = await fetch(`${API_BASE}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      let detail = 'Registration failed';
+      try {
+        const err = await res.json();
+        detail = err.detail || detail;
+      } catch {}
+      throw new Error(detail);
+    }
+    const resData = await res.json();
+    this.setToken(resData.access_token);
+    return resData;
+  }
+
+  logout() {
+    this.setToken(null);
   }
 
   async getCurrentUser(): Promise<UserRecord> {
