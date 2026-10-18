@@ -6,6 +6,8 @@ export type AppTab =
   | 'landing'
   | 'login'
   | 'signup'
+  | 'terms'
+  | 'privacy'
   | 'dashboard'
   | 'projects'
   | 'studio'

@@ -20,6 +20,8 @@ import { AuditPage } from './pages/AuditPage';
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { SignupPage } from './pages/SignupPage';
+import { TermsPage } from './pages/TermsPage';
+import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
 
 export const App: React.FC = () => {
   const activeTab = useAppStore((s) => s.activeTab);
@@ -40,6 +42,14 @@ export const App: React.FC = () => {
 
   if (activeTab === 'signup') {
     return <SignupPage />;
+  }
+
+  if (activeTab === 'terms') {
+    return <TermsPage />;
+  }
+
+  if (activeTab === 'privacy') {
+    return <PrivacyPolicyPage />;
   }
 
   const renderActivePage = () => {

@@ -5,143 +5,97 @@
 @layer base {
   body {
     @apply bg-[#080b11] text-slate-100 font-sans antialiased;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   }
 }
 
-/* Custom modern scrollbars */
+/* Disciplined technical scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #07090e;
+  background: #080b11;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1c2538;
-  border-radius: 4px;
+  background: #1e293b;
+  border-radius: 2px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3b82f6;
+  background: #334155;
 }
 
-/* Glassmorphism & Surface Utilities */
-.glass-panel {
-  background: rgba(14, 18, 28, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+/* Professional solid engineering surfaces (Zero blurry liquid glass) */
+.studio-surface {
+  background-color: #0d131f;
+  border: 1px solid #1e293b;
 }
 
-.glass-card {
-  background: linear-gradient(135deg, rgba(20, 27, 45, 0.6) 0%, rgba(11, 15, 25, 0.7) 100%);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+.studio-card {
+  background-color: #0f1626;
+  border: 1px solid #1e293b;
 }
 
-.glass-card:hover {
-  border-color: rgba(99, 102, 241, 0.3);
-  box-shadow: 0 12px 40px 0 rgba(99, 102, 241, 0.12);
-}
-
-.glass-input {
-  background: rgba(11, 15, 25, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+.studio-input {
+  background-color: #090e18;
+  border: 1px solid #1e293b;
   color: #f1f5f9;
-  transition: all 0.2s ease-in-out;
+  transition: border-color 0.15s ease-in-out;
 }
 
-.glass-input:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
+.studio-input:focus {
+  border-color: #3b82f6;
   outline: none;
 }
 
-/* Gradient Text */
-.gradient-text {
-  background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 50%, #94a3b8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+/* Clean, high-legibility solid headings (Zero rainbow text) */
+.heading-primary {
+  color: #ffffff;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
-.gradient-text-accent {
-  background: linear-gradient(135deg, #60a5fa 0%, #818cf8 50%, #c084fc 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.heading-secondary {
+  color: #cbd5e1;
+  font-weight: 600;
 }
 
-.gradient-text-emerald {
-  background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #06b6d4 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+/* Subtle hairline divider */
+.hairline-b {
+  border-bottom: 1px solid #1e293b;
 }
 
-/* Ambient Radial Glows */
-.glow-indigo {
-  box-shadow: 0 0 50px -10px rgba(99, 102, 241, 0.3);
+.hairline-t {
+  border-top: 1px solid #1e293b;
 }
 
-.glow-cyan {
-  box-shadow: 0 0 50px -10px rgba(6, 182, 212, 0.3);
-}
-
-/* Ambient Background Mesh */
-.ambient-mesh {
-  background-image: 
-    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(6, 182, 212, 0.1) 0px, transparent 50%),
-    radial-gradient(at 50% 100%, rgba(139, 92, 246, 0.08) 0px, transparent 50%);
-}
-
-/* Grid Patterns */
-.neural-grid {
-  background-size: 32px 32px;
-  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-                    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-}
-
-.canvas-grid {
-  background-size: 24px 24px;
-  background-image: radial-gradient(circle, #1a2234 1px, transparent 1px);
-}
-
-/* Pulse animation */
-@keyframes pulse-subtle {
-  0%, 100% { opacity: 0.4; transform: scale(1); }
-  50% { opacity: 0.8; transform: scale(1.04); }
-}
-
-.animate-pulse-subtle {
-  animation: pulse-subtle 4s ease-in-out infinite;
-}
-
-/* React Flow custom styling for dark mode */
+/* React Flow custom styling for industrial engineering look */
 .react-flow__background {
-  background-color: #07090e !important;
+  background-color: #080b11 !important;
 }
 .react-flow__controls {
-  background: #111726 !important;
-  border: 1px solid #232f48 !important;
-  border-radius: 8px !important;
+  background: #0f1626 !important;
+  border: 1px solid #1e293b !important;
+  border-radius: 4px !important;
   overflow: hidden;
+  box-shadow: none !important;
 }
 .react-flow__controls-button {
-  background: #111726 !important;
-  border-bottom: 1px solid #232f48 !important;
-  color: #94aee0 !important;
-  fill: #94aee0 !important;
+  background: #0f1626 !important;
+  border-bottom: 1px solid #1e293b !important;
+  color: #94a3b8 !important;
+  fill: #94a3b8 !important;
 }
 .react-flow__controls-button:hover {
-  background: #182032 !important;
+  background: #1e293b !important;
   color: #ffffff !important;
   fill: #ffffff !important;
 }
 .react-flow__edge-path {
   stroke: #3b82f6 !important;
-  stroke-width: 2 !important;
+  stroke-width: 1.5 !important;
 }
 .react-flow__edge.selected .react-flow__edge-path {
-  stroke: #06b6d4 !important;
-  stroke-width: 3 !important;
+  stroke: #60a5fa !important;
+  stroke-width: 2 !important;
 }

@@ -362,7 +362,7 @@ export const TrainingPage: React.FC = () => {
                       </div>
                       {activeJob.error_message?.toLowerCase().includes('conv2d') && (
                         <div className="mt-2 text-[11px] text-amber-300 bg-amber-950/30 p-2 rounded border border-amber-500/20 leading-relaxed">
-                          💡 <strong>How to Fix:</strong> The architecture has a <code>Conv2d</code> layer (which expects 2D/3D images like MNIST <code>[1, 28, 28]</code>), but the selected dataset is 1D tabular. To train on this dataset, choose a <strong>Linear / Dense MLP</strong> architecture, or select <strong>MNIST</strong> for image Conv2d!
+                          <strong>Remediation:</strong> The architecture has a <code>Conv2d</code> layer (which expects 2D/3D images like MNIST <code>[1, 28, 28]</code>), but the selected dataset is 1D tabular. To train on this dataset, choose a <strong>Linear / Dense MLP</strong> architecture, or select <strong>MNIST</strong> for image Conv2d.
                         </div>
                       )}
                     </div>

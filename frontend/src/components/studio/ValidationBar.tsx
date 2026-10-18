@@ -77,7 +77,7 @@ export const ValidationBar: React.FC = () => {
               <option value="convnet">Template: Vision ConvNet</option>
               <option value="mlp">Template: Dense MLP</option>
               <option value="tabular">Template: Tabular Classifier</option>
-              <option value="blank">📄 Blank Canvas (Start Empty)</option>
+              <option value="blank">Blank Canvas (Start Empty)</option>
             </select>
             <button
               onClick={() => resetGraph('blank')}
